@@ -8,8 +8,12 @@ import { MatDrawer } from '@angular/material/sidenav';
 })
 export class BodyComponent {
   @ViewChild('drawer', { static: true }) public drawer!: MatDrawer;
+  @ViewChild('drawerCode', { static: true }) public codeDrawer!: MatDrawer;
   toggle() {
     console.debug("Helloo!!")
     this.drawer.toggle();
+  }
+  toggleCode(){
+    this.codeDrawer.toggle();
   }
 }

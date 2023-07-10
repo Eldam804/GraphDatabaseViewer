@@ -14,6 +14,10 @@ export class HeaderComponent {
   @Output("openDrawer")
   emitter: EventEmitter<any> = new EventEmitter();
 
+  @Output("openCodeDrawer")
+  codeEmitter: EventEmitter<any> = new EventEmitter();
+
+
   constructor(public dialog: MatDialog) {}
   openModal(){
     const dialogRef = this.dialog.open(DBConnectDialogComponent, {
@@ -26,5 +30,8 @@ export class HeaderComponent {
   }
   openDrawer(){
     this.emitter.emit("openDrawer");
+  }
+  openCodeDrawer(){
+    this.codeEmitter.emit("openCodeDrawer");
   }
 }

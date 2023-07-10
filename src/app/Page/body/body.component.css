@@ -19,3 +19,9 @@
     height: 100%;
     width: 100%;
   }
+
+  .code-sidenav {
+    width: 400px;
+    overflow: hidden;
+  }
+  

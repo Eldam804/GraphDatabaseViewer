@@ -1,7 +1,14 @@
 <div class="app-container">
   <app-header
     (openDrawer)="toggle()"
+    (openCodeDrawer)="toggleCode()"
   ></app-header>
+  <mat-drawer-container class="example-container" [hasBackdrop]="true">
+    <mat-drawer #drawerCode [mode]="'over'" position="end" class="code-sidenav">
+      <div class="query-wrapper">
+        <app-queries> </app-queries>
+      </div>
+    </mat-drawer>
   <mat-drawer-container class="example-container" [hasBackdrop]="true">
     <mat-drawer #drawer [mode]="'over'">
       <button primary>Create new node</button>
@@ -9,15 +16,11 @@
     </mat-drawer>
   <div class="content-container">
     <mat-grid-list cols="4" rowHeight="93vh">
-      <mat-grid-tile [colspan]="3" [rowspan]="1" style="background-color: aqua">
+      <mat-grid-tile [colspan]="4" [rowspan]="1" style="background-color: aqua">
         <app-canvas-view> </app-canvas-view>
-      </mat-grid-tile>
-      <mat-grid-tile [colspan]="1" [rowspan]="1">
-        <div class="query-wrapper">
-          <app-queries> </app-queries>
-        </div>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
   </mat-drawer-container>
+</mat-drawer-container>
 </div>
