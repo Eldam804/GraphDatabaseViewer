@@ -1,0 +1,14 @@
+<div class="main">
+<div class="body" *ngFor="let query of queries">
+    <span>{{query}}</span>
+</div>
+<div class="actions">
+    <mat-form-field class="input-field">
+        <mat-label>Enter query:</mat-label>
+        <input matInput [(ngModel)]="query">
+        <button mat-icon-button matSuffix (click)="sendQuery()">
+            <mat-icon>send</mat-icon>
+        </button>
+    </mat-form-field>
+</div>
+</div>
