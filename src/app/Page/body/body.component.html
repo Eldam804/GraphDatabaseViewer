@@ -1,5 +1,12 @@
 <div class="app-container">
-  <app-header></app-header>
+  <app-header
+    (openDrawer)="toggle()"
+  ></app-header>
+  <mat-drawer-container class="example-container" [hasBackdrop]="true">
+    <mat-drawer #drawer [mode]="'over'">
+      <button primary>Create new node</button>
+      <button primary>Get all nodes</button>
+    </mat-drawer>
   <div class="content-container">
     <mat-grid-list cols="4" rowHeight="93vh">
       <mat-grid-tile [colspan]="3" [rowspan]="1" style="background-color: aqua">
@@ -12,4 +19,5 @@
       </mat-grid-tile>
     </mat-grid-list>
   </div>
+  </mat-drawer-container>
 </div>

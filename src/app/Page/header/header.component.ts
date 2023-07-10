@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
 import { DBConnectDialogComponent } from 'src/app/Components/dbconnect-dialog/dbconnect-dialog.component';
 
@@ -11,6 +11,8 @@ export class HeaderComponent {
   private ipAddress: String = "192.168.11.22";
   private dbName: String = "Neo4j DB";
 
+  @Output("openDrawer")
+  emitter: EventEmitter<any> = new EventEmitter();
 
   constructor(public dialog: MatDialog) {}
   openModal(){
@@ -21,5 +23,8 @@ export class HeaderComponent {
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
     });
+  }
+  openDrawer(){
+    this.emitter.emit("openDrawer");
   }
 }
