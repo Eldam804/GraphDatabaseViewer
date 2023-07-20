@@ -11,15 +11,13 @@
     </mat-drawer>
   <mat-drawer-container class="example-container" [hasBackdrop]="true">
     <mat-drawer #drawer [mode]="'over'">
-      <button primary>Create new node</button>
-      <button primary>Get all nodes</button>
+      <button mat-button extended color="primary">Create new node</button>
+      <br>
+      <button mat-button extended color="primary">Get all nodes</button>
+    
     </mat-drawer>
-  <div class="content-container">
-    <mat-grid-list cols="4" rowHeight="93vh">
-      <mat-grid-tile [colspan]="4" [rowspan]="1" style="background-color: aqua">
+  <div>
         <app-canvas-view> </app-canvas-view>
-      </mat-grid-tile>
-    </mat-grid-list>
   </div>
   </mat-drawer-container>
 </mat-drawer-container>

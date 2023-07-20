@@ -10,11 +10,16 @@ export class DriverService {
   private driver: Driver;
   constructor() { 
     this.neo4jUrl = 'bolt://localhost:7687';
-    this.driver = neo4j.driver(this.neo4jUrl, neo4j.auth.basic('neo4j', 'Swag1234'));
+    this.driver = neo4j.driver(this.neo4jUrl, neo4j.auth.basic('neo4j', 'Swag1234'), {disableLosslessIntegers: true});
   }
 
   sendQuery(query: String):Observable<any>{
     return from(this.execute(query));
+  }
+
+  public getAllNodes():Observable<any>{
+    //return from(this.execute("MATCH(n) MATCH()-[r]-() RETURN n, r"));
+    return from(this.execute("MATCH(n) RETURN n"));
   }
 
   private execute(query: String): Promise<any>{

@@ -10,6 +10,9 @@ import { DBConnectDialogComponent } from 'src/app/Components/dbconnect-dialog/db
 export class HeaderComponent {
   private ipAddress: String = "192.168.11.22";
   private dbName: String = "Neo4j DB";
+  public zoomPercentage: number = 100;
+  readonly UPPER_LIMIT: number = 150;
+  readonly LOWER_LIMIT: number = 10;
 
   @Output("openDrawer")
   emitter: EventEmitter<any> = new EventEmitter();
@@ -33,5 +36,16 @@ export class HeaderComponent {
   }
   openCodeDrawer(){
     this.codeEmitter.emit("openCodeDrawer");
+  }
+
+  increaseZoom(){
+    if(this.zoomPercentage < this.UPPER_LIMIT){
+      this.zoomPercentage += 10;
+    }
+  }
+  decreaseZoom(){
+    if(this.zoomPercentage > this.LOWER_LIMIT){
+      this.zoomPercentage -= 10;
+    }
   }
 }

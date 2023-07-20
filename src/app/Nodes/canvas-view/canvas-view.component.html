@@ -1,5 +1,14 @@
-<div cdkDrag class="example-box">
-:User
-name: "Misty"
-password: "Karlos"
+<div #dragContainer>
+<div *ngFor="let node of nodes" >
+    <div class="example-box" cdkDrag  [cdkDragBoundary]="dragContainer">
+        <div class="text-box">
+      <div class="node-name">
+        :{{ node.name }}
+      </div>
+      <div *ngFor="let prop of node.properties | keyvalue" class="property">
+        <span class="key">{{ prop.key }}:</span> <span class="value">{{ prop.value }}</span>
+      </div>
+        </div>
+    </div>
+  </div>
 </div>

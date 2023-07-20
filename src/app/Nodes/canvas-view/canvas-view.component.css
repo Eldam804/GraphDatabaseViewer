@@ -17,3 +17,21 @@
                 0 2px 2px 0 rgba(0, 0, 0, 0.14),
                 0 1px 5px 0 rgba(0, 0, 0, 0.12);
   }
+  
+  .text-box{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .node-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .property {
+    margin-left: 15px;
+  }
+  .key {
+    font-size: 15px;
+  }
