@@ -8,6 +8,7 @@ import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 })
 export class CanvasViewComponent {
   public nodes: Array<any> = [];
+  public edges: Array<any> = [];
   constructor(private service: DriverService){
     this.getAllNodes();
   }
