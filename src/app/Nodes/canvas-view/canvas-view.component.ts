@@ -50,74 +50,128 @@ export class CanvasViewComponent {
   } 
   createGraph() {
     // Get the native elements
-  console.debug("DATA:")
-  console.debug(this.nodes);
-  console.debug(this.edges)
-  const svgWidth = 800; // Adjust as needed
-  const svgHeight = 800; // Adjust as needed
+    console.debug("DATA:")
+    console.debug(this.nodes);
+    console.debug(this.edges)
+    const svgWidth = 800; // Adjust as needed
+    const svgHeight = 800; // Adjust as needed
+  
+    // Get the native elements
+    const svg = d3.select(this.svgRef.nativeElement)
+      .attr('width', svgWidth)
+      .attr('height', svgHeight);
+  
+    const graphContainer = d3.select(this.graphContainerRef.nativeElement)
+      .style('width', svgWidth + 'px')
+      .style('height', svgHeight + 'px');
+  
+    // Initialize nodes with random positions within the SVG container
+    this.nodes.forEach(node => {
+      node.x = Math.random() * svgWidth;
+      node.y = Math.random() * svgHeight;
+    });
+  
+    // Define your graph layout, for example, a force-directed layout
+    const simulation = d3
+      .forceSimulation(this.nodes)
+      .force(
+        'link',
+        d3.forceLink(this.edges).id((d: any) => d.id).distance(250)
+      )
+      .force('charge', d3.forceManyBody().strength(-100))
+      
+      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2));
+  
+    // Create links and nodes
+    const links = svg
+      .selectAll('path') // Use 'path' elements for links
+      .data(this.edges)
+      .enter()
+      .append('path') // Create a path for each link
+      .attr('stroke', '#ccc') // Set the stroke color
+      .attr('stroke-width', 2); // Set the stroke width
+  
+    const linkPathGenerator = d3.linkVertical()
+      .x((d: any) => d.x)
+      .y((d: any) => d.y);
+  
+    // Set the 'd' attribute of the path element
+    links.attr('d', (d: any) => linkPathGenerator({ source: d.source, target: d.target }));
+  
+    // Create a group element for each node, which includes a circle and text
+    const nodes = svg
+      .selectAll('.node-group') // Use a class to select
+      .data(this.nodes)
+      .enter()
+      .append('g') // Create a group for each node
+      .attr('class', 'node-group')
+      .attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
+  
+    // Append a circle to the node group
+    nodes
+      .append('circle')
+      .attr('r', 50) // Adjust the radius as needed for bigger nodes
+      .attr('fill', 'lightblue');
+  
+    // Append text to the node group
+    nodes
+      .append('text')
+      .attr('dy', -25) // Adjust the vertical position of the text
+      .style('text-anchor', 'middle')
+      .style('font-weight', 'bold')
+      .text((d: any) => ':' + d.name); // Display the node name
+  
+    // Append attributes text to the node group
+    nodes
+      .append('text')
+      .attr('dy', -5) // Adjust the vertical position of the text
+      .style('text-anchor', 'middle')
+      .text((d: any) => {
+        const attributes = Object.entries(d.properties);
+        return attributes.map(([key, value]) => `${key}: ${value}`).join('\n');
+      });
+      const nodeGroups = svg
+  .selectAll('g')
+  .data(this.nodes)
+  .enter()
+  .append('g')
+  .attr('class', 'node-group')
+  .attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
 
-  // Get the native elements
-  const svg = d3.select(this.svgRef.nativeElement)
-    .attr('width', svgWidth)
-    .attr('height', svgHeight);
+// Append a circle to each 'g' element
+nodeGroups
+  .append('circle')
+  .attr('r', 20) // Adjust the radius to your desired size
+  .attr('fill', 'lightblue');
 
-  const graphContainer = d3.select(this.graphContainerRef.nativeElement)
-    .style('width', svgWidth + 'px')
-    .style('height', svgHeight + 'px');
-
-  // Initialize nodes with random positions within the SVG container
-  this.nodes.forEach(node => {
-    node.x = Math.random() * svgWidth;
-    node.y = Math.random() * svgHeight;
-  });
-
-  // Define your graph layout, for example, a force-directed layout
-  const simulation = d3
-    .forceSimulation(this.nodes)
-    .force(
-      'link',
-      d3.forceLink(this.edges).id((d: any) => d.id)
-    )
-    .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2));
-
-  // Create links and nodes
-  const links = svg
-    .selectAll('path') // Use 'path' elements for links
-    .data(this.edges)
-    .enter()
-    .append('path') // Create a path for each link
-    .attr('stroke', '#ccc') // Set the stroke color
-    .attr('stroke-width', 2); // Set the stroke width
-
-  const linkPathGenerator = d3.linkVertical()
-    .x((d: any) => d.x)
-    .y((d: any) => d.y);
-
-  // Set the 'd' attribute of the path element
-  links.attr('d', (d: any) => linkPathGenerator({ source: d.source, target: d.target }));
-
-  const nodes = svg
-    .selectAll('circle')
-    .data(this.nodes)
-    .enter()
-    .append('circle')
-    .attr('r', 10)
-    .attr('fill', 'lightblue');
-
-  // Define a tick function to update the positions of nodes and links
-  simulation.on('tick', () => {
-    links
-      .attr('d', (d: any) => linkPathGenerator({ source: d.source, target: d.target }));
-
-    nodes.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y);
-  });
-
-  // Append the SVG to the graph container
-  svg.attr('width', '800px').attr('height', '800px');
-  graphContainer.style('width', '800px').style('height', '800px');
-
-  // Start the simulation
-  simulation.alpha(1).restart();
+// Append a foreignObject with text to each 'g' element for wrapping text
+nodeGroups
+  .append('foreignObject')
+  .attr('width', 40) // Adjust the width to control text wrapping
+  .attr('height', 40) // Adjust the height to control text wrapping
+  .attr('x', -20) // Position the foreignObject in the center of the circle
+  .attr('y', -20) // Position the foreignObject in the center of the circle
+  .append('xhtml:div')
+  .attr('class', 'node-text')
+  .html((d: any) => `
+    <b>${d.name}</b><br>
+    Name: ${d.properties.name}<br>
+    Age: ${d.properties.age}
+  `);
+  
+    // Define a tick function to update the positions of nodes and links
+    simulation.on('tick', () => {
+      links
+        .attr('d', (d: any) => linkPathGenerator({ source: d.source, target: d.target }));
+  
+      nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
+    });
+  
+    // Append the SVG to the graph container
+    svg.attr('width', '800px').attr('height', '800px');
+    graphContainer.style('width', '800px').style('height', '800px');
+  
+    // Start the simulation
+    simulation.alpha(1).restart();
   }
 }
