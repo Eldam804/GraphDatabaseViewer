@@ -53,8 +53,8 @@ export class CanvasViewComponent {
     console.debug("DATA:")
     console.debug(this.nodes);
     console.debug(this.edges)
-    const svgWidth = 800; // Adjust as needed
-    const svgHeight = 800; // Adjust as needed
+    const svgWidth = 1920; // Adjust as needed
+    const svgHeight = 1080; // Adjust as needed
   
     // Get the native elements
     const svg = d3.select(this.svgRef.nativeElement)
@@ -63,7 +63,8 @@ export class CanvasViewComponent {
   
     const graphContainer = d3.select(this.graphContainerRef.nativeElement)
       .style('width', svgWidth + 'px')
-      .style('height', svgHeight + 'px');
+      .style('height', svgHeight + 'px')
+      .style('overflow', 'hidden');
   
     // Initialize nodes with random positions within the SVG container
     this.nodes.forEach(node => {
@@ -168,8 +169,8 @@ nodeGroups
     });
   
     // Append the SVG to the graph container
-    svg.attr('width', '800px').attr('height', '800px');
-    graphContainer.style('width', '800px').style('height', '800px');
+    svg.attr('width', '1920').attr('height', '92vh');
+    graphContainer.style('width', '1920').style('height', '92vh');
   
     // Start the simulation
     simulation.alpha(1).restart();
