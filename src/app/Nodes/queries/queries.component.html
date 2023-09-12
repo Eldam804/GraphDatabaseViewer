@@ -1,6 +1,11 @@
 <div class="main">
 <div class="body" *ngFor="let query of queries">
-    <span>{{query}}</span>
+    <div *ngIf="query.message == 'Success'" class="message-container success-message">
+        <span class="success-message">{{query.query}}</span> 
+      </div>
+      <div *ngIf="query.message == 'Error'" class="message-container error-message">
+        <span class="error-message">{{query.query}}</span>
+      </div>
 </div>
 <div class="actions">
     <mat-form-field class="input-field">

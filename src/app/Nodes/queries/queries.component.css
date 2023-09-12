@@ -1,10 +1,9 @@
 .main {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+  height: 80%;
+  width: 95%;
+  overflow: auto; /* Allow vertical scrolling for messages */
+  padding: 10px; /* Add padding to the chat container */
+}
   
   .title {
     background-color: #f5f5f5;
@@ -24,12 +23,67 @@
   }
   
   .actions {
-    flex-grow: 1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
+    position: absolute; /* Position it absolutely within the chat container */
+    bottom: 0; /* Place it at the bottom */
+    width: 95%; /* Make it full width */
+    /*background-color: #f5f5f5; /* Background color for the actions container */
+    display: flex; /* Use flex to align the input and button */
+    justify-content: space-between; /* Space items evenly */
+    align-items: center; /* Center items vertically */
+
   }
   
   .input-field {
     width: 100%;
   }
+
+  .success-message {
+    background-color: #2869c9; /* Green background color */
+    color: white; /* White text color */
+    font-weight: bold;
+    padding: 5px; /* Add padding for spacing */
+    border-radius: 5px; /* Rounded corners */
+    margin: 5px 0; /* Adjust margin for spacing between messages */
+    display: inline-block; /* Make messages display in a line */
+    max-width: 100%; /* Limit message width to 80% of the container */
+    word-wrap: break-word; /* Allow long messages to wrap */
+  }
+  
+  .error-message {
+    background-color: #db252b; /* Red background color */
+    color: white; /* White text color */
+    font-weight: bold;
+    padding: 5px; /* Add padding for spacing */
+    border-radius: 5px; /* Rounded corners */
+    margin: 5px 0; /* Adjust margin for spacing between messages */
+    display: inline-block; /* Make messages display in a line */
+    max-width: 100%; /* Limit message width to 80% of the container */
+    word-wrap: break-word; /* Allow long messages to wrap */
+  }
+  
+  /* Container style to separate each message */
+  .message-container {
+    margin: 5px 0;
+    padding: 10px; /* Increased padding for better spacing */
+    border: 2px solid #ccc; /* Thicker border for better visibility */
+    border-radius: 30px; /* Rounded corners */
+    display: inline-block;
+    max-width: 80%; /* Limit message width to 80% of the container */
+    word-wrap: break-word; /* Allow long messages to wrap */
+    font-size: 14px; /* Adjust text size */
+    line-height: 1.4; /* Adjust line height for better readability */
+    background-color: #f5f5f5; /* Background color */
+  }
+  
+  /* Background color for Success message */
+  .message-container.success-message {
+    background-color: #2869c9; /* Green color */
+    color: #fff; /* White text color */
+  }
+  
+  /* Background color for Error message */
+  .message-container.error-message {
+    background-color: #db252b; /* Red color */
+    color: #fff; /* White text color */
+  }
+  
