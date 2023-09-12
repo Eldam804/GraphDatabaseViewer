@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
 import { MatFormField } from '@angular/material/form-field';
 import { DriverService } from 'src/app/Neo4j/Database/driver.service';
-import { of } from 'rxjs';
-import { error } from 'neo4j-driver';
-import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-queries',

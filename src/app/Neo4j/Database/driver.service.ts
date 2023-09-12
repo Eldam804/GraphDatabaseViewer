@@ -21,6 +21,9 @@ export class DriverService {
     //return from(this.execute("MATCH(n) MATCH()-[r]-() RETURN n, r"));
     return from(this.execute("MATCH(n) RETURN n"));
   }
+  public getAllEdges(): Observable<any> {
+    return from(this.execute("MATCH ()-[r]->() RETURN r"));
+  }
 
   private execute(query: String): Promise<any>{
     return new Promise((resolve, reject) => {

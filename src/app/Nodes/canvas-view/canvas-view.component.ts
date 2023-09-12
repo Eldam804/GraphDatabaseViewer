@@ -18,12 +18,25 @@ export class CanvasViewComponent {
       console.debug(data);
       for(let i = 0; i < data.length; i++){
         this.nodes.push({
+          id: data[i]._fields[0].identity,
           name: data[i]._fields[0].labels[0],
           properties: data[i]._fields[0].properties 
         })
       }
+      console.debug("RETRIEVING NODES")
       console.debug(this.nodes);
-      console.log(data);
     })
-  }
+    this.service.getAllEdges().subscribe((data: any) => {
+      console.debug("RETRIEVING EDGES")
+      console.debug(data);
+      for(let i = 0; i < data.length; i++){
+        this.edges.push({
+          startNode: data[i]._fields[0].start,
+          endNode: data[i]._fields[0].end
+        })
+      }
+      console.debug("EDGES:")
+      console.debug(this.edges);
+    })
+  } 
 }
