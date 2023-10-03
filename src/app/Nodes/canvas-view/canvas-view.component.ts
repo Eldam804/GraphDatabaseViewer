@@ -58,8 +58,9 @@ export class CanvasViewComponent {
     console.debug("DATA:")
     console.debug(this.nodes);
     console.debug(this.edges)
-    const svgWidth = 1920; // Adjust as needed
-    const svgHeight = 1080; // Adjust as needed
+    const svgWidth = window.innerWidth; // Set the width to the window width
+    const svgHeight = window.innerHeight; // Set the height to the window height
+
   
     // Get the native elements
     const svg = d3.select(this.svgRef.nativeElement)
@@ -69,14 +70,14 @@ export class CanvasViewComponent {
       const zoomHandler = (event: any) => {
         const currentTransform = event.transform;
 
-        // Calculate the visible bounds based on the extent
-        const boundsX = zoomBehavior.scaleExtent().map(extent => extent * svgWidth);
-        const boundsY = zoomBehavior.scaleExtent().map(extent => extent * svgHeight);
+        const minX = -svgWidth * (currentTransform.k - 1);
+        const minY = -svgHeight * (currentTransform.k - 1);
+        const maxX = svgWidth * (currentTransform.k - 1);
+        const maxY = svgHeight * (currentTransform.k - 1);
 
-        // Limit translation (panning) to the visible bounds
-        currentTransform.x = Math.max(boundsX[0], Math.min(currentTransform.x, boundsX[1]));
-        currentTransform.y = Math.max(boundsY[0], Math.min(currentTransform.y, boundsY[1]));
-
+        // Limit translation (panning) to the bounds
+        currentTransform.x = Math.max(minX, Math.min(currentTransform.x, maxX));
+        currentTransform.y = Math.max(minY, Math.min(currentTransform.y, maxY));
 
         // Limit zoom to the extent
         currentTransform.k = Math.min(zoomBehavior.scaleExtent()[1], Math.max(currentTransform.k, zoomBehavior.scaleExtent()[0]));
@@ -88,7 +89,7 @@ export class CanvasViewComponent {
       const zoomBehavior = d3
         .zoom()
         .extent([[0, 0], [svgWidth, svgHeight]])
-        .scaleExtent([0.1, 10])
+        .scaleExtent([1, 10])
         .on('zoom', zoomHandler);
       
       svg.call(zoomBehavior);
@@ -207,8 +208,8 @@ nodeGroups
     });
   
     // Append the SVG to the graph container
-    svg.attr('width', '1920').attr('height', '92vh');
-    graphContainer.style('width', '1920').style('height', '92vh');
+    svg.attr('width', svgWidth).attr('height', svgHeight);
+    graphContainer.style('width', svgWidth + 'px').style('height', svgHeight + 'px');
   
     // Start the simulation
     simulation.alpha(1).restart();
