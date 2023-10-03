@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 import * as d3 from 'd3';
 import { ElementRef, OnInit, ViewChild } from '@angular/core';
+import { zoom, zoomIdentity } from 'd3-zoom';
 
 @Component({
   selector: 'app-canvas-view',
@@ -13,6 +14,9 @@ export class CanvasViewComponent {
   @ViewChild('graphContainer') graphContainerRef!: ElementRef;  
   public nodes: Array<any> = [];
   public edges: Array<any> = [];
+  private svg: any;
+  private zoomBehavior: any;
+
   constructor(private service: DriverService){
     this.getAllNodes();
   }
@@ -48,6 +52,7 @@ export class CanvasViewComponent {
       this.createGraph();
     })
   } 
+  
   createGraph() {
     // Get the native elements
     console.debug("DATA:")
@@ -60,7 +65,34 @@ export class CanvasViewComponent {
     const svg = d3.select(this.svgRef.nativeElement)
       .attr('width', svgWidth)
       .attr('height', svgHeight);
-  
+    
+      const zoomHandler = (event: any) => {
+        const currentTransform = event.transform;
+
+        // Calculate the visible bounds based on the extent
+        const boundsX = zoomBehavior.scaleExtent().map(extent => extent * svgWidth);
+        const boundsY = zoomBehavior.scaleExtent().map(extent => extent * svgHeight);
+
+        // Limit translation (panning) to the visible bounds
+        currentTransform.x = Math.max(boundsX[0], Math.min(currentTransform.x, boundsX[1]));
+        currentTransform.y = Math.max(boundsY[0], Math.min(currentTransform.y, boundsY[1]));
+
+
+        // Limit zoom to the extent
+        currentTransform.k = Math.min(zoomBehavior.scaleExtent()[1], Math.max(currentTransform.k, zoomBehavior.scaleExtent()[0]));
+
+        // Use event.transform for the zoom transformation
+        svg.attr('transform', event.transform);
+      };
+      
+      const zoomBehavior = d3
+        .zoom()
+        .extent([[0, 0], [svgWidth, svgHeight]])
+        .scaleExtent([0.1, 10])
+        .on('zoom', zoomHandler);
+      
+      svg.call(zoomBehavior);
+
     const graphContainer = d3.select(this.graphContainerRef.nativeElement)
       .style('width', svgWidth + 'px')
       .style('height', svgHeight + 'px')
@@ -164,8 +196,14 @@ nodeGroups
     simulation.on('tick', () => {
       links
         .attr('d', (d: any) => linkPathGenerator({ source: d.source, target: d.target }));
+        //.attr('x1', (d: any) => d.source.x * d3.event.transform.k + d3.event.transform.x)
+        //.attr('y1', (d: any) => d.source.y * d3.event.transform.k + d3.event.transform.y)
+        //.attr('x2', (d: any) => d.target.x * d3.event.transform.k + d3.event.transform.x)
+        //.attr('y2', (d: any) => d.target.y * d3.event.transform.k + d3.event.transform.y);
   
       nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
+        //.attr('cx', (d: any) => d.x * d3.event.transform.k + d3.event.transform.x)
+        //.attr('cy', (d: any) => d.y * d3.event.transform.k + d3.event.transform.y);
     });
   
     // Append the SVG to the graph container
@@ -174,5 +212,38 @@ nodeGroups
   
     // Start the simulation
     simulation.alpha(1).restart();
+    this.svg = svg;
+    this.zoomBehavior = zoomBehavior;
+  }
+  increaseZoom() {
+    // Get the current transform
+    const currentTransform = d3.zoomTransform(this.svg.node());
+    
+    // Increase the scale factor
+    const newScale = currentTransform.k * 1.2; // You can adjust the zoom factor as needed
+  
+    // Create a new transform
+    const newTransform = d3.zoomIdentity
+      .translate(currentTransform.x, currentTransform.y)
+      .scale(newScale);
+  
+    // Apply the new transform with a smooth transition
+    this.svg.transition().duration(250).call(this.zoomBehavior.transform, newTransform);
+  }
+  
+   decreaseZoom() {
+    // Get the current transform
+    const currentTransform = d3.zoomTransform(this.svg.node());
+  
+    // Decrease the scale factor
+    const newScale = currentTransform.k / 1.2; // You can adjust the zoom factor as needed
+  
+    // Create a new transform
+    const newTransform = d3.zoomIdentity
+      .translate(currentTransform.x, currentTransform.y)
+      .scale(newScale);
+  
+    // Apply the new transform with a smooth transition
+    this.svg.transition().duration(250).call(this.zoomBehavior.transform, newTransform);
   }
 }
