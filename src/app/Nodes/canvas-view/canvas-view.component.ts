@@ -101,8 +101,8 @@ export class CanvasViewComponent implements OnChanges{
 
     const zoomHandler = (event: any) => {
       const { x, y, k } = event.transform;
-      event.transform.x = constrain(x, -2 * svgWidth, 2 * svgWidth);
-      event.transform.y = constrain(y, -2 * svgHeight, 2 * svgHeight);
+      //event.transform.x = constrain(x, -2 * svgWidth, 2 * svgWidth);
+      //event.transform.y = constrain(y, -2 * svgHeight, 2 * svgHeight);
       linkGroup.attr('transform', event.transform);
       nodeGroup.attr('transform', event.transform);
   };
@@ -134,7 +134,7 @@ export class CanvasViewComponent implements OnChanges{
   };
   
   const zoomBehavior = d3.zoom()
-      .extent([[-2 * svgWidth, -2 * svgHeight], [10 * svgWidth, 10 * svgHeight]])
+      .extent([[0, 0], [svgWidth,svgHeight]])
       .scaleExtent([0.1, 30])
       .on('zoom', zoomHandler);
 
