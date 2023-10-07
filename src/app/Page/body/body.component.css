@@ -22,11 +22,18 @@
   }
   .query-wrapper {
     height: 90%;
-    width: 100%;
+    width: 90%;
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
 
   .code-sidenav {
-    width: 400px;
-    overflow: hidden;
+    width: 300px;  /* Adjust this value as required */
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
   
+  .mat-drawer-container > div {
+    height: 100%;
+    width: 100%;
+  }

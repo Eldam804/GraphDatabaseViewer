@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter  } from '@angular/core';
 import { MatFormField } from '@angular/material/form-field';
 import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 
@@ -10,6 +10,7 @@ import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 export class QueriesComponent {
   public query?: String;
   public queries: any[] = [];
+  @Output() queryResult: EventEmitter<any> = new EventEmitter(); 
   constructor(private neo4jDriver: DriverService) {
   }
 
@@ -24,6 +25,8 @@ export class QueriesComponent {
             };
             this.queries.push(queryObj);
             console.debug(this.queries);
+            console.debug("QUERY RESULT:" + result)
+            this.queryResult.emit(result);
             this.query = "";
           },
           (error) => {

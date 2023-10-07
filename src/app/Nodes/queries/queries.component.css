@@ -1,8 +1,9 @@
 .main {
   height: 80%;
   width: 95%;
-  overflow: auto; /* Allow vertical scrolling for messages */
-  padding: 10px; /* Add padding to the chat container */
+  overflow-x: hidden;
+  overflow-y: hidden; /* Allow vertical scrolling for messages */
+  /* Add padding to the chat container */
 }
   
   .title {

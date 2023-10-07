@@ -3,4 +3,6 @@
   }
   mat-toolbar {
     height: 10%;
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
