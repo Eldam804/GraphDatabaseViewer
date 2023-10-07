@@ -35,17 +35,22 @@ export class CanvasViewComponent implements OnChanges{
     console.debug(this.canvasData);
     this.nodes = [];
     this.edges = [];
-    var data = this.canvasData
-    data.forEach((er: any) => {
-      this.nodes.push({
-        id: er._fields[0].identity,
-        name: er._fields[0].labels[0],
-        properties: er._fields[0].properties
+    var data = this.canvasData;
+    if(this.canvasData && this.canvasData.length == 0) {
+      console.debug("GETALLNODES:")
+      this.getAllNodes();
+    }else{
+      data.forEach((er: any) => {
+        this.nodes.push({
+          id: er._fields[0].identity,
+          name: er._fields[0].labels[0],
+          properties: er._fields[0].properties
+        });
       });
-    });
-    console.debug("nodes:" + this.nodes);
-    console.debug("edges:" + this.edges);
-    this.createGraph();
+      console.debug("nodes:" + this.nodes);
+      console.debug("edges:" + this.edges);
+      this.createGraph();
+    }
   }
 
   getAllNodes(){
@@ -101,10 +106,36 @@ export class CanvasViewComponent implements OnChanges{
       linkGroup.attr('transform', event.transform);
       nodeGroup.attr('transform', event.transform);
   };
+  const getLongestWordLength = (properties: any) => {
+    let longestLength = 0;
+
+    for (let key in properties) {
+        const keyLength = key.length;
+        const valueLength = String(properties[key]).length;
+        longestLength = Math.max(longestLength, 
+          (keyLength + valueLength));
+    }
+
+    return longestLength;
+  };
+  const computeCircleRadius = (attributeCount: number, wordLenght: number) => {
+    const baseRadius = 50;
+    const additionalRadius = 3;  // Increment for each additional attribute beyond a threshold
+    const threshold = 3;  // Base radius corresponds to this number of attributes
+    const wordThreshold = 10;
+    
+    if (attributeCount <= threshold && wordLenght <= wordThreshold) return baseRadius;
+    if(attributeCount >= wordLenght){
+      return baseRadius + (attributeCount - threshold) * additionalRadius
+    }else{
+      return baseRadius + (wordLenght - wordThreshold) * additionalRadius;
+    }
+    
+  };
   
   const zoomBehavior = d3.zoom()
-      .extent([[-2 * svgWidth, -2 * svgHeight], [3 * svgWidth, 3 * svgHeight]])
-      .scaleExtent([1, 20])
+      .extent([[-2 * svgWidth, -2 * svgHeight], [10 * svgWidth, 10 * svgHeight]])
+      .scaleExtent([0.1, 30])
       .on('zoom', zoomHandler);
 
     svg.call(zoomBehavior);
@@ -112,9 +143,14 @@ export class CanvasViewComponent implements OnChanges{
     // Random node positions
 
     const simulation = d3.forceSimulation(this.nodes)
-      .force('link', d3.forceLink(this.edges).id((d: any) => d.id).distance(300)) // Shortened distance
-      .force('charge', d3.forceManyBody().strength(-200)) // Increased repulsion for closer nodes
-      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2));
+      .force('link', d3.forceLink(this.edges).id((d: any) => d.id).distance(400)) // Increased distance
+      .force('charge', d3.forceManyBody().strength(-300)) // Increased repulsion
+      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
+      .force('collision', d3.forceCollide().radius((d: any) => {
+        const attributeCount = Object.entries(d.properties).length;
+        const longestWordLength = getLongestWordLength(d.properties);
+        return computeCircleRadius(attributeCount, longestWordLength) + 200; // Added some extra spacing
+    }));
 
     const linkGroup = svg.append('g').attr('class', 'links');
     const nodeGroup = svg.append('g').attr('class', 'nodes');
@@ -135,32 +171,7 @@ export class CanvasViewComponent implements OnChanges{
         .enter().append('g')
         .attr('class', 'node-group');
 
-    const computeCircleRadius = (attributeCount: number, wordLenght: number) => {
-      const baseRadius = 50;
-      const additionalRadius = 3;  // Increment for each additional attribute beyond a threshold
-      const threshold = 3;  // Base radius corresponds to this number of attributes
-      const wordThreshold = 10;
-      
-      if (attributeCount <= threshold && wordLenght <= wordThreshold) return baseRadius;
-      if(attributeCount >= wordLenght){
-        return baseRadius + (attributeCount - threshold) * additionalRadius
-      }else{
-        return baseRadius + (wordLenght - wordThreshold) * additionalRadius;
-      }
-      
-    };
-    const getLongestWordLength = (properties: any) => {
-      let longestLength = 0;
-  
-      for (let key in properties) {
-          const keyLength = key.length;
-          const valueLength = String(properties[key]).length;
-          longestLength = Math.max(longestLength, 
-            (keyLength + valueLength));
-      }
-  
-      return longestLength;
-    };
+    
 
     nodes.append('circle')
     .attr('r', (d: any) => {
