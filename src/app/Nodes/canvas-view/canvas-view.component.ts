@@ -110,9 +110,9 @@ export class CanvasViewComponent {
       .forceSimulation(this.nodes)
       .force(
         'link',
-        d3.forceLink(this.edges).id((d: any) => d.id).distance(250)
+        d3.forceLink(this.edges).id((d: any) => d.id).distance(1000)
       )
-      .force('charge', d3.forceManyBody().strength(-100))
+      .force('charge', d3.forceManyBody().strength(-40))
       
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2));
   
@@ -122,8 +122,9 @@ export class CanvasViewComponent {
       .data(this.edges)
       .enter()
       .append('path') // Create a path for each link
-      .attr('stroke', '#ccc') // Set the stroke color
-      .attr('stroke-width', 2); // Set the stroke width
+      .attr('stroke', '#ccc') // Set the stroke color to transparent
+      .attr('stroke-width', 0)
+      .attr('stroke-opacity', 0);
   
     const linkPathGenerator = d3.linkVertical()
       .x((d: any) => d.x)
