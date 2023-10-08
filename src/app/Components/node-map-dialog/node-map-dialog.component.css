@@ -1,0 +1,23 @@
+.info-header {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+  }
+  
+  .info-section {
+    margin-bottom: 15px;
+  }
+  
+  .section-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .color-box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    vertical-align: middle;
+    border: 1px solid #888;
+  }

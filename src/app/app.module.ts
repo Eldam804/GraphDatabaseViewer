@@ -22,6 +22,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import { NodeMapDialogComponent } from './Components/node-map-dialog/node-map-dialog.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -31,6 +32,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
     BodyComponent,
     FooterComponent,
     DBConnectDialogComponent,
+    NodeMapDialogComponent,
   ],
   exports: [
     AppComponent,

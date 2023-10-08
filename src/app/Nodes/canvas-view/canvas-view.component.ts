@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output, SimpleChanges, EventEmitter } from '@angular/core';
 import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 import * as d3 from 'd3';
 import { ElementRef, OnInit, ViewChild } from '@angular/core';
@@ -18,6 +18,7 @@ export class CanvasViewComponent implements OnChanges{
   private svg: any;
   private zoomBehavior: any;
   @Input() canvasData: any;
+  @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService){
     this.getAllNodes();
@@ -65,17 +66,42 @@ export class CanvasViewComponent implements OnChanges{
               properties: nodeData._fields[0].properties 
           });
       });
-
+      console.debug(edgesData);
       edgesData.forEach((edgeData: any) => {
           this.edges.push({
               source: edgeData._fields[0].start,
-              target: edgeData._fields[0].end
+              target: edgeData._fields[0].end,
+              type: edgeData._fields[0].type
           });
       });
 
       this.createGraph();
   });
   } 
+  generateColors(n: number): string[] {
+    const colors: string[] = [];
+    const usedHues: Set<number> = new Set();
+
+    // Generate a random number within a range, inclusive
+    const randomBetween = (min: number, max: number) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+
+    for (let i = 0; i < n; i++) {
+        let hue;
+        do {
+            hue = randomBetween(0, 359);
+        } while (usedHues.has(hue)); // Ensure the hue hasn't been used yet
+
+        usedHues.add(hue);
+        const saturation = randomBetween(60, 100);
+        const lightness = randomBetween(40, 60);
+
+        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+    }
+
+    return colors;
+}
   
   createGraph() {
     const svgWidth = window.innerWidth;
@@ -83,9 +109,33 @@ export class CanvasViewComponent implements OnChanges{
 
 
     const nodeTypes = [...new Set(this.nodes.map(node => node.name))];
-    const colorScale = d3.scaleOrdinal(d3.schemeCategory10) // or any other categorical color scheme
-      .domain(nodeTypes);
+    const edgeTypes = [...new Set(this.edges.map(edge => edge.type))];
+
+    //this.nodeInfo.emit([nodeTypes, edgeTypes]);
+
+    const allTypes = [...nodeTypes, ...edgeTypes]; // Combine node and edge types.
+    const colors = this.generateColors(allTypes.length); // Generate colors for all unique types.
+
+    const colorScale = d3.scaleOrdinal(colors).domain(allTypes);
+
+    //const colorScale = d3.scaleOrdinal(d3.schemeCategory10) // or any other categorical color scheme
+      //.domain(nodeTypes);
+    //const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10) // or any other color scheme
+    //  .domain(edgeTypes);
     // Select SVG and set dimensions
+    const nodeTypesWithColors = nodeTypes.map(nodeType => ({
+      nodeType: nodeType,
+      color: colorScale(nodeType)
+    }));
+  
+  const edgeTypesWithColors = edgeTypes.map(edgeType => ({
+      relType: edgeType,
+      color: colorScale(edgeType)
+    }));
+
+  // Emit the combined data (types and colors)
+  this.nodeInfo.emit([nodeTypesWithColors, edgeTypesWithColors]);
+  
     const svg = d3.select(this.svgRef.nativeElement)
       .style('background-color', 'transparent')
         .attr('width', svgWidth)
@@ -159,7 +209,7 @@ export class CanvasViewComponent implements OnChanges{
     .selectAll('line')
     .data(this.edges)
     .enter().append('line')
-    .attr('stroke', 'red') 
+    .attr('stroke', (d: any) => colorScale(d.type))
     .attr('stroke-width', 2);
 
     const lineGenerator = d3.line()
