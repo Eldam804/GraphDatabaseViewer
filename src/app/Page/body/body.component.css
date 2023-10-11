@@ -1,27 +1,39 @@
 .app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Ensure the container takes at least the height of the viewport */
-  }
-  
-  .content-container {
-    flex-grow: 1; /* Allow the content container to grow and fill the available space */
-    display: flex; /* Enable flexbox layout */
-    justify-content: center; /* Center the grid horizontally */
-    align-items: flex-start; /* Align the grid to the top of the container */
-  }
+  display: flex;
+  flex-direction: column;
+  /*min-height: 100vh;*/
+  overflow-x: hidden; /* Prevent scrolling */
+  overflow-y: hidden;
+}
+
+.content-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align content to the top */
+  overflow-x: hidden; /* Add a scrollbar when the content overflows */
+  overflow-y: hidden;
+  height: 80%;
+}
   
   .mat-grid-list {
     width: 100%; /* Make the grid list fill the available width */
-    height: 100%;
+    height: 90%;
   }
   .query-wrapper {
-    height: 100%;
-    width: 100%;
+    height: 90%;
+    width: 90%;
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
 
   .code-sidenav {
-    width: 400px;
-    overflow: hidden;
+    width: 300px;  /* Adjust this value as required */
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
   
+  .mat-drawer-container > div {
+    height: 100%;
+    width: 100%;
+  }

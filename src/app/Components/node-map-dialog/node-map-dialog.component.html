@@ -1,0 +1,17 @@
+<div mat-dialog-content>
+    <div class="info-header">Node/Relationship type</div>
+  
+    <div class="info-section">
+      <div class="section-header">Nodes:</div>
+      <ul>
+        <li *ngFor="let node of data[0]">{{ node.nodeType }} : <span class="color-box" [style.background]="node.color"></span></li>
+      </ul>
+    </div>
+  
+    <div class="info-section">
+      <div class="section-header">Edges:</div>
+      <ul>
+        <li *ngFor="let edge of data[1]">{{ edge.relType }} : <span class="color-box" [style.background]="edge.color"></span></li>
+      </ul>
+    </div>
+</div>

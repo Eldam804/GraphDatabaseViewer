@@ -1,24 +1,21 @@
 <div class="app-container">
-  <app-header
-    (openDrawer)="toggle()"
-    (openCodeDrawer)="toggleCode()"
-  ></app-header>
+  <app-header (openDrawer)="toggle()" (openCodeDrawer)="toggleCode()" [nodeInformation]="nodeData" (viewChanged)="handleViewChange($event)"></app-header>
+
   <mat-drawer-container class="example-container" [hasBackdrop]="true">
     <mat-drawer #drawerCode [mode]="'over'" position="end" class="code-sidenav">
       <div class="query-wrapper">
-        <app-queries> </app-queries>
+        <app-queries (queryResult)="handleQueryResult($event)" (queryNodesResult)="handleNodeResult($event)" (queryRelationshipsResult)="handleRelationshipsResult($event)"></app-queries>
       </div>
     </mat-drawer>
-  <mat-drawer-container class="example-container" [hasBackdrop]="true">
+
     <mat-drawer #drawer [mode]="'over'">
       <button mat-button extended color="primary">Create new node</button>
       <br>
       <button mat-button extended color="primary">Get all nodes</button>
-    
     </mat-drawer>
-  <div>
-        <app-canvas-view> </app-canvas-view>
-  </div>
+
+    <div>
+      <app-canvas-view [classicView]="classicView" [canvasData]="queryOutput" (nodeInfo)="nodeData = $event" [nodeData]="nodes" [edgeData]="edges"></app-canvas-view>
+    </div>
   </mat-drawer-container>
-</mat-drawer-container>
 </div>

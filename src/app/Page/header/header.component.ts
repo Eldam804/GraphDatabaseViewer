@@ -1,6 +1,7 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
 import { DBConnectDialogComponent } from 'src/app/Components/dbconnect-dialog/dbconnect-dialog.component';
+import { NodeMapDialogComponent } from 'src/app/Components/node-map-dialog/node-map-dialog.component';
 
 @Component({
   selector: 'app-header',
@@ -9,6 +10,8 @@ import { DBConnectDialogComponent } from 'src/app/Components/dbconnect-dialog/db
 })
 export class HeaderComponent {
   private ipAddress: String = "192.168.11.22";
+  @Input()
+  public nodeInformation: any;
   private dbName: String = "Neo4j DB";
   public zoomPercentage: number = 100;
   readonly UPPER_LIMIT: number = 150;
@@ -20,12 +23,16 @@ export class HeaderComponent {
   @Output("openCodeDrawer")
   codeEmitter: EventEmitter<any> = new EventEmitter();
 
+  @Output() viewChanged = new EventEmitter<boolean>();
+
 
   constructor(public dialog: MatDialog) {}
   openModal(){
-    const dialogRef = this.dialog.open(DBConnectDialogComponent, {
-      data: {dbName: this.dbName, ipAddress: this.ipAddress}
+    
+    const dialogRef = this.dialog.open(NodeMapDialogComponent, {
+      data: this.nodeInformation
     });
+    console.debug(this.nodeInformation);
     
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
@@ -38,14 +45,10 @@ export class HeaderComponent {
     this.codeEmitter.emit("openCodeDrawer");
   }
 
-  increaseZoom(){
-    if(this.zoomPercentage < this.UPPER_LIMIT){
-      this.zoomPercentage += 10;
-    }
+  classicView(){
+    this.viewChanged.emit(true);
   }
-  decreaseZoom(){
-    if(this.zoomPercentage > this.LOWER_LIMIT){
-      this.zoomPercentage -= 10;
-    }
+  clusterView(){
+    this.viewChanged.emit(false);
   }
 }

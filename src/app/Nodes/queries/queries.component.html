@@ -1,19 +1,25 @@
 <div class="main">
-<div class="body" *ngFor="let query of queries">
-    <div *ngIf="query.message == 'Success'" class="message-container success-message">
-        <span class="success-message">{{query.query}}</span> 
+    <div class="body">
+      <!-- Container for messages -->
+      <div *ngFor="let query of queries">
+        <div *ngIf="query.message == 'Success'" class="message-container success-message">
+            <span class="success-message">{{query.query}}</span> 
+          </div>
+          <div *ngIf="query.message == 'Error'" class="message-container error-message">
+            <span class="error-message">{{query.query}}</span>
+          </div>
       </div>
-      <div *ngIf="query.message == 'Error'" class="message-container error-message">
-        <span class="error-message">{{query.query}}</span>
-      </div>
-</div>
-<div class="actions">
-    <mat-form-field class="input-field">
-        <mat-label>Enter query:</mat-label>
-        <input matInput [(ngModel)]="query">
-        <button mat-icon-button matSuffix (click)="sendQuery()">
-            <mat-icon>send</mat-icon>
-        </button>
-    </mat-form-field>
-</div>
-</div>
+    </div>
+    <div class="actions">
+        <mat-form-field class="input-field">
+            <mat-label>Enter query:</mat-label>
+            <input matInput [(ngModel)]="query"
+                (keydown.enter)="sendQuery()" 
+            >
+            <button mat-icon-button matSuffix (click)="sendQuery()">
+                <mat-icon>send</mat-icon>
+            </button>
+        </mat-form-field>
+    </div>
+  </div>
+  
