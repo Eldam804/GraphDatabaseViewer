@@ -13,7 +13,7 @@ export class BodyComponent {
   public nodes: any;
   public edges: any;
   public nodeData: any;
-  classicView: boolean = false; // default value
+  classicView: boolean = true; // default value
 
   handleViewChange(view: boolean) {
     this.classicView = view;

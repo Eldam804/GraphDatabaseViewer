@@ -20,7 +20,7 @@ export class CanvasViewComponent implements OnChanges{
   @Input() canvasData: any;
   @Input() nodeData: any;
   @Input() edgeData: any;
-  @Input() classicView: Boolean = false;
+  @Input() classicView: Boolean = true;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService){
@@ -30,13 +30,17 @@ export class CanvasViewComponent implements OnChanges{
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
     if(changes.classicView && !changes.classicView.firstChange){
+      console.debug(this.classicView);
       if(this.classicView){
+        console.debug(this.nodes);
+        console.debug(this.edges);
         this.createGraph();
       }else{
+        console.debug(this.nodes);
+        console.debug(this.edges);
         this.createClusterGraph();
       }
     }
-    console.debug("CHANGES!")
     if ((changes.nodeData && !changes.nodeData.firstChange) || (changes.edgeData && !changes.edgeData.firstChange)) {
       this.handleCanvasDataChange();
     }
@@ -68,8 +72,12 @@ export class CanvasViewComponent implements OnChanges{
     this.nodes = this.nodeData;
     this.edges = this.edgeData;
     if(this.classicView){
+      console.debug(this.nodes);
+      console.debug(this.edges);
       this.createGraph();
     }else{
+      console.debug(this.nodes);
+      console.debug(this.edges);
       this.createClusterGraph();
     }
     
@@ -99,6 +107,7 @@ export class CanvasViewComponent implements OnChanges{
       console.debug(this.edges);
       console.debug("ACTUAL NODES:");
       console.debug(this.nodes);
+      console.debug(this.classicView);
       if(this.classicView){
         this.createGraph();
       }else{
@@ -319,8 +328,17 @@ createClusterGraph() {
   // Edges: Count and consolidate based on source-target-type
   let linkCounts: { [key: string]: { count: number, type: string } } = {};
   this.edges.forEach(edge => {
-      const sourceType = this.nodes.find(node => node.id === edge.source)?.name;
-      const targetType = this.nodes.find(node => node.id === edge.target)?.name;
+      let edgeSource: any;
+      let edgeTarget: any;
+      if(edge.source.id == undefined){
+        edgeSource = edge.source;
+        edgeTarget = edge.target;
+      }else{
+        edgeSource = edge.source.id;
+        edgeTarget = edge.target.id;
+      }
+      const sourceType = this.nodes.find(node => node.id === edgeSource)?.name;
+      const targetType = this.nodes.find(node => node.id === edgeTarget)?.name;
 
       if ((sourceType && targetType) && (sourceType != targetType)) {
           const key = `${sourceType}-${targetType}-${edge.type}`;
