@@ -1,5 +1,5 @@
 <div class="app-container">
-  <app-header (openDrawer)="toggle()" (openCodeDrawer)="toggleCode()" [nodeInformation]="nodeData"></app-header>
+  <app-header (openDrawer)="toggle()" (openCodeDrawer)="toggleCode()" [nodeInformation]="nodeData" (viewChanged)="handleViewChange($event)"></app-header>
 
   <mat-drawer-container class="example-container" [hasBackdrop]="true">
     <mat-drawer #drawerCode [mode]="'over'" position="end" class="code-sidenav">
@@ -15,7 +15,7 @@
     </mat-drawer>
 
     <div>
-      <app-canvas-view [canvasData]="queryOutput" (nodeInfo)="nodeData = $event" [nodeData]="nodes" [edgeData]="edges"></app-canvas-view>
+      <app-canvas-view [classicView]="classicView" [canvasData]="queryOutput" (nodeInfo)="nodeData = $event" [nodeData]="nodes" [edgeData]="edges"></app-canvas-view>
     </div>
   </mat-drawer-container>
 </div>

@@ -13,6 +13,11 @@ export class BodyComponent {
   public nodes: any;
   public edges: any;
   public nodeData: any;
+  classicView: boolean = false; // default value
+
+  handleViewChange(view: boolean) {
+    this.classicView = view;
+  }
   toggle() {
     console.debug("Helloo!!")
     this.drawer.toggle();

@@ -23,6 +23,8 @@ export class HeaderComponent {
   @Output("openCodeDrawer")
   codeEmitter: EventEmitter<any> = new EventEmitter();
 
+  @Output() viewChanged = new EventEmitter<boolean>();
+
 
   constructor(public dialog: MatDialog) {}
   openModal(){
@@ -43,14 +45,10 @@ export class HeaderComponent {
     this.codeEmitter.emit("openCodeDrawer");
   }
 
-  increaseZoom(){
-    if(this.zoomPercentage < this.UPPER_LIMIT){
-      this.zoomPercentage += 10;
-    }
+  classicView(){
+    this.viewChanged.emit(true);
   }
-  decreaseZoom(){
-    if(this.zoomPercentage > this.LOWER_LIMIT){
-      this.zoomPercentage -= 10;
-    }
+  clusterView(){
+    this.viewChanged.emit(false);
   }
 }

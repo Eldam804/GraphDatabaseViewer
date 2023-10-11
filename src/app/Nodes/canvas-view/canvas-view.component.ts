@@ -29,6 +29,13 @@ export class CanvasViewComponent implements OnChanges{
 
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
+    if(changes.classicView && !changes.classicView.firstChange){
+      if(this.classicView){
+        this.createGraph();
+      }else{
+        this.createClusterGraph();
+      }
+    }
     console.debug("CHANGES!")
     if ((changes.nodeData && !changes.nodeData.firstChange) || (changes.edgeData && !changes.edgeData.firstChange)) {
       this.handleCanvasDataChange();
@@ -303,7 +310,6 @@ createClusterGraph() {
 
   let clusterNodes = Object.keys(nodeCounts).map(type => ({
       id: type,
-      //labels: [type],
       name: type,
       properties: {
           amount: nodeCounts[type]
@@ -337,11 +343,16 @@ createClusterGraph() {
       };
   });
 
-  // D3 setup
-  const allTypes = [...new Set(clusterNodes.map(node => node.name)), ...new Set(this.edges.map(edge => edge.type))];
-  const colors = this.generateColors(allTypes.length);
+  // Extract unique node types and edge types
+  const nodeTypes = [...new Set(this.nodes.map(node => node.name))];
+  const edgeTypes = [...new Set(this.edges.map(edge => edge.type))];
+  const allTypes = [...nodeTypes, ...edgeTypes]; // Combine node and edge types.
+
+  // Generate colors for all unique types.
+  const colors = this.generateColors(allTypes.length); 
   const colorScale = d3.scaleOrdinal(colors).domain(allTypes);
 
+  // D3 setup
   const svg = d3.select(this.svgRef.nativeElement)
       .style('background-color', 'transparent')
       .attr('width', svgWidth)
@@ -352,20 +363,19 @@ createClusterGraph() {
 
   const zoomBehavior = d3.zoom()
       .extent([[0, 0], [svgWidth, svgHeight]])
-      .scaleExtent([0.1, 30])
+      .scaleExtent([0.1, 8])
       .on('zoom', (event: any) => {
           linkGroup.attr('transform', event.transform);
           nodeGroup.attr('transform', event.transform);
       });
 
   svg.call(zoomBehavior);
-  console.debug("EDGES IN CLUSTER VIEW:")
-  console.debug(consolidatedEdges);
+
   const simulation = d3.forceSimulation(clusterNodes as any)
       .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(500))
       .force('charge', d3.forceManyBody().strength(-400))
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
-      .force('collision', d3.forceCollide().radius(50)); // fixed radius for clusters
+      .force('collision', d3.forceCollide().radius(50));
 
   const linkGroup = svg.append('g').attr('class', 'links');
   const nodeGroup = svg.append('g').attr('class', 'nodes');
@@ -415,6 +425,20 @@ createClusterGraph() {
 
   this.svg = svg;
   this.zoomBehavior = zoomBehavior;
+
+  // Prepare data for modal window display
+  const nodeTypesWithColors = nodeTypes.map(nodeType => ({
+    nodeType: nodeType,
+    color: colorScale(nodeType)
+  }));
+
+  const edgeTypesWithColors = edgeTypes.map(edgeType => ({
+    relType: edgeType,
+    color: colorScale(edgeType)
+  }));
+
+  // Emit the combined data (types and colors) for the modal
+  this.nodeInfo.emit([nodeTypesWithColors, edgeTypesWithColors]);
 }
   increaseZoom() {
     // Get the current transform
