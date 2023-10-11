@@ -18,6 +18,8 @@ export class CanvasViewComponent implements OnChanges{
   private svg: any;
   private zoomBehavior: any;
   @Input() canvasData: any;
+  @Input() nodeData: any;
+  @Input() edgeData: any;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService){
@@ -26,7 +28,8 @@ export class CanvasViewComponent implements OnChanges{
 
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
-    if (changes.canvasData && !changes.canvasData.firstChange) {
+    console.debug("CHANGES!")
+    if ((changes.nodeData && !changes.nodeData.firstChange) || (changes.edgeData && !changes.edgeData.firstChange)) {
       this.handleCanvasDataChange();
     }
   }
@@ -36,8 +39,8 @@ export class CanvasViewComponent implements OnChanges{
     console.debug(this.canvasData);
     this.nodes = [];
     this.edges = [];
-    var data = this.canvasData;
-    if(this.canvasData && this.canvasData.length == 0) {
+    //var data = this.canvasData;
+    /*if(this.canvasData && this.canvasData.length == 0) {
       console.debug("GETALLNODES:")
       this.getAllNodes();
     }else{
@@ -50,8 +53,13 @@ export class CanvasViewComponent implements OnChanges{
       });
       console.debug("nodes:" + this.nodes);
       console.debug("edges:" + this.edges);
-      this.createGraph();
-    }
+      
+    }*/
+    console.debug(this.nodeData);
+    console.debug(this.edgeData);
+    this.nodes = this.nodeData;
+    this.edges = this.edgeData;
+    this.createGraph();
   }
 
   getAllNodes(){
@@ -74,7 +82,10 @@ export class CanvasViewComponent implements OnChanges{
               type: edgeData._fields[0].type
           });
       });
-
+      console.debug("ACTUAL EDGES:");
+      console.debug(this.edges);
+      console.debug("ACTUAL NODES:");
+      console.debug(this.nodes);
       this.createGraph();
   });
   } 

@@ -10,6 +10,8 @@ export class BodyComponent {
   @ViewChild('drawer', { static: true }) public drawer!: MatDrawer;
   @ViewChild('drawerCode', { static: true }) public codeDrawer!: MatDrawer;
   public queryOutput: any;
+  public nodes: any;
+  public edges: any;
   public nodeData: any;
   toggle() {
     console.debug("Helloo!!")
@@ -24,5 +26,11 @@ export class BodyComponent {
     this.queryOutput = result;
 
     // If you need to process the result before sending it to app-canvas-view, do it here
+  }
+  handleNodeResult(result: any){
+    this.nodes = result;
+  }
+  handleRelationshipsResult(result: any){
+    this.edges = result;
   }
 }
