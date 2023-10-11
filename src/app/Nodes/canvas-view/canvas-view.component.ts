@@ -20,6 +20,7 @@ export class CanvasViewComponent implements OnChanges{
   @Input() canvasData: any;
   @Input() nodeData: any;
   @Input() edgeData: any;
+  @Input() classicView: Boolean = false;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService){
@@ -59,7 +60,12 @@ export class CanvasViewComponent implements OnChanges{
     console.debug(this.edgeData);
     this.nodes = this.nodeData;
     this.edges = this.edgeData;
-    this.createGraph();
+    if(this.classicView){
+      this.createGraph();
+    }else{
+      this.createClusterGraph();
+    }
+    
   }
 
   getAllNodes(){
@@ -86,7 +92,11 @@ export class CanvasViewComponent implements OnChanges{
       console.debug(this.edges);
       console.debug("ACTUAL NODES:");
       console.debug(this.nodes);
-      this.createGraph();
+      if(this.classicView){
+        this.createGraph();
+      }else{
+        this.createClusterGraph();
+      }
   });
   } 
   generateColors(n: number): string[] {
@@ -274,6 +284,137 @@ export class CanvasViewComponent implements OnChanges{
 
     this.svg = svg;
     this.zoomBehavior = zoomBehavior;
+}
+
+createClusterGraph() {
+  const svgWidth = window.innerWidth;
+  const svgHeight = window.innerHeight;
+
+  // Nodes: Count and consolidate based on type
+  let nodeCounts: { [key: string]: number } = {};
+  this.nodes.forEach(node => {
+      let type = node.name;
+      if (nodeCounts[type]) {
+          nodeCounts[type]++;
+      } else {
+          nodeCounts[type] = 1;
+      }
+  });
+
+  let clusterNodes = Object.keys(nodeCounts).map(type => ({
+      id: type,
+      //labels: [type],
+      name: type,
+      properties: {
+          amount: nodeCounts[type]
+      },
+  }));
+
+  // Edges: Count and consolidate based on source-target-type
+  let linkCounts: { [key: string]: { count: number, type: string } } = {};
+  this.edges.forEach(edge => {
+      const sourceType = this.nodes.find(node => node.id === edge.source)?.name;
+      const targetType = this.nodes.find(node => node.id === edge.target)?.name;
+
+      if ((sourceType && targetType) && (sourceType != targetType)) {
+          const key = `${sourceType}-${targetType}-${edge.type}`;
+
+          if (linkCounts[key]) {
+              linkCounts[key].count++;
+          } else {
+              linkCounts[key] = { count: 1, type: edge.type };
+          }
+      }
+  });
+
+  const consolidatedEdges = Object.entries(linkCounts).map(([key, info]) => {
+      const [source, target, type] = key.split('-');
+      return {
+          source,
+          target,
+          type: info.type,
+          count: info.count
+      };
+  });
+
+  // D3 setup
+  const allTypes = [...new Set(clusterNodes.map(node => node.name)), ...new Set(this.edges.map(edge => edge.type))];
+  const colors = this.generateColors(allTypes.length);
+  const colorScale = d3.scaleOrdinal(colors).domain(allTypes);
+
+  const svg = d3.select(this.svgRef.nativeElement)
+      .style('background-color', 'transparent')
+      .attr('width', svgWidth)
+      .attr('height', svgHeight);
+
+  svg.selectAll('.nodes').remove();
+  svg.selectAll('.links').remove();
+
+  const zoomBehavior = d3.zoom()
+      .extent([[0, 0], [svgWidth, svgHeight]])
+      .scaleExtent([0.1, 30])
+      .on('zoom', (event: any) => {
+          linkGroup.attr('transform', event.transform);
+          nodeGroup.attr('transform', event.transform);
+      });
+
+  svg.call(zoomBehavior);
+  console.debug("EDGES IN CLUSTER VIEW:")
+  console.debug(consolidatedEdges);
+  const simulation = d3.forceSimulation(clusterNodes as any)
+      .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(500))
+      .force('charge', d3.forceManyBody().strength(-400))
+      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
+      .force('collision', d3.forceCollide().radius(50)); // fixed radius for clusters
+
+  const linkGroup = svg.append('g').attr('class', 'links');
+  const nodeGroup = svg.append('g').attr('class', 'nodes');
+
+  const links = linkGroup
+      .selectAll('line')
+      .data(consolidatedEdges)
+      .enter().append('line')
+      .attr('stroke', (d) => colorScale(d.type))
+      .attr('stroke-width', 2);
+
+  const linkText = linkGroup
+      .selectAll('.link-text')
+      .data(consolidatedEdges)
+      .enter().append('text')
+      .attr('class', 'link-text')
+      .text((d) => `${d.type}: ${d.count}`);
+
+  const nodes = nodeGroup.selectAll('.node-group')
+      .data(clusterNodes)
+      .enter().append('g')
+      .attr('class', 'node-group');
+
+  nodes.append('circle')
+      .attr('r', 50)
+      .attr('fill', (d) => colorScale(d.name));
+
+  nodes.append('text')
+      .attr('dy', -25)
+      .style('text-anchor', 'middle')
+      .style('font-weight', 'bold')
+      .text((d) => `${d.name}: ${d.properties.amount}`);
+
+  simulation.on('tick', () => {
+      links
+          .attr('x1', (d: any) => d.source.x)
+          .attr('y1', (d: any) => d.source.y)
+          .attr('x2', (d: any) => d.target.x)
+          .attr('y2', (d: any) => d.target.y);
+
+      linkText
+          .attr('x', (d: any) => (d.source.x + d.target.x) / 2)
+          .attr('y', (d: any) => (d.source.y + d.target.y) / 2);
+
+      nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
+  });
+
+  this.svg = svg;
+  this.zoomBehavior = zoomBehavior;
 }
   increaseZoom() {
     // Get the current transform
