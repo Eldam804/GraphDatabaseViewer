@@ -6,21 +6,17 @@
   </button>
     <span>Graph Database Viewer</span>
     <span class="example-spacer"></span>
-    <span>
-      Zoom Percentage: 
-      {{zoomPercentage}}%
-    </span>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="increaseZoom()">
-      <mat-icon>zoom_in</mat-icon>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="increaseZoom()" matTooltip="Classic View">
+      <mat-icon>hub</mat-icon>
     </button>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="decreaseZoom()">
-      <mat-icon>zoom_out</mat-icon>
-    </button>
-    <span class="example-spacer"></span>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openModal()">
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="decreaseZoom()" matTooltip="Cluster View">
       <mat-icon>share</mat-icon>
     </button>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openCodeDrawer()">
+    <span class="example-spacer"></span>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openModal()" matTooltip="Node/Edge Legend">
+      <mat-icon>menu_book</mat-icon>
+    </button>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openCodeDrawer()" matTooltip="Queries">
       <mat-icon>terminal</mat-icon>
     </button>
     

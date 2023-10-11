@@ -23,6 +23,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { NodeMapDialogComponent } from './Components/node-map-dialog/node-map-dialog.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @NgModule({
   declarations: [
     AppComponent,
@@ -46,6 +47,7 @@ import { NodeMapDialogComponent } from './Components/node-map-dialog/node-map-di
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    MatTooltipModule,
     MatSlideToggleModule,
     MatGridListModule,
     CdkDrag,
