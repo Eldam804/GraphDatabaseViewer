@@ -360,6 +360,38 @@ createClusterGraph() {
           count: info.count
       };
   });
+  const nodeById: any = {};
+clusterNodes.forEach((node) => {
+  nodeById[node.id] = node;
+});
+
+consolidatedEdges.forEach((d: any, i) => {
+    d.source = nodeById[d.source];
+    d.target = nodeById[d.target];
+
+    if (!d.source.linkCount) {
+        d.source.linkCount = {};
+    }
+
+    if (d.source.linkCount[d.target.id]) {
+        d.source.linkCount[d.target.id]++;
+    } else {
+        d.source.linkCount[d.target.id] = 1;
+    }
+    
+    // Store the index of this link among the links between the same nodes
+    d.linkIndex = d.source.linkCount[d.target.id] - 1;
+});
+function linkArc(d: any) {
+  const dx = d.target.x - d.source.x,
+        dy = d.target.y - d.source.y,
+        dr = Math.sqrt(dx * dx + dy * dy); // Original straight distance
+
+  // Use the linkIndex and linkCount to adjust the offset
+  const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 200; 
+
+  return `M${d.source.x},${d.source.y}A${dr + offset},${dr + offset} 0 0,1 ${d.target.x},${d.target.y}`;
+}
 
   // Extract unique node types and edge types
   const nodeTypes = [...new Set(this.nodes.map(node => node.name))];
@@ -378,7 +410,6 @@ createClusterGraph() {
 
   svg.selectAll('.nodes').remove();
   svg.selectAll('.links').remove();
-
   const zoomBehavior = d3.zoom()
       .extent([[0, 0], [svgWidth, svgHeight]])
       .scaleExtent([0.1, 8])
@@ -399,11 +430,13 @@ createClusterGraph() {
   const nodeGroup = svg.append('g').attr('class', 'nodes');
 
   const links = linkGroup
-      .selectAll('line')
-      .data(consolidatedEdges)
-      .enter().append('line')
-      .attr('stroke', (d) => colorScale(d.type))
-      .attr('stroke-width', 2);
+    .selectAll('path')
+    .data(consolidatedEdges)
+    .enter().append('path')
+    .attr('stroke', (d) => colorScale(d.type))
+    .attr('fill', 'none') // Prevent the path from being filled
+    .attr('stroke-width', 2)
+    .attr('fill', 'none');
 
   const linkText = linkGroup
       .selectAll('.link-text')
@@ -428,11 +461,7 @@ createClusterGraph() {
       .text((d) => `${d.name}: ${d.properties.amount}`);
 
   simulation.on('tick', () => {
-      links
-          .attr('x1', (d: any) => d.source.x)
-          .attr('y1', (d: any) => d.source.y)
-          .attr('x2', (d: any) => d.target.x)
-          .attr('y2', (d: any) => d.target.y);
+      links.attr('d', linkArc);
 
       linkText
           .attr('x', (d: any) => (d.source.x + d.target.x) / 2)
