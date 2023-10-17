@@ -383,15 +383,13 @@ consolidatedEdges.forEach((d: any, i) => {
     d.linkIndex = d.source.linkCount[d.target.id] - 1;
 });
 function linkArc(d: any) {
-  const dx = d.target.x - d.source.x,
-        dy = d.target.y - d.source.y,
-        dr = Math.sqrt(dx * dx + dy * dy); // Original straight distance
-
-  // Use the linkIndex and linkCount to adjust the offset
-  const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 200; 
-
-  return `M${d.source.x},${d.source.y}A${dr + offset},${dr + offset} 0 0,1 ${d.target.x},${d.target.y}`;
-}
+    const dx = d.target.x - d.source.x,
+      dy = d.target.y - d.source.y,
+      dr = Math.sqrt(dx * dx + dy * dy);
+    const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 200; 
+    const qx = d.source.x + dx / 2 + offset, qy = d.source.y + dy / 2 + offset;
+    return `M${d.source.x},${d.source.y}Q${qx},${qy} ${d.target.x},${d.target.y}`;
+  }
 
   // Extract unique node types and edge types
   const nodeTypes = [...new Set(this.nodes.map(node => node.name))];
@@ -421,10 +419,10 @@ function linkArc(d: any) {
   svg.call(zoomBehavior);
 
   const simulation = d3.forceSimulation(clusterNodes as any)
-      .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(500))
-      .force('charge', d3.forceManyBody().strength(-400))
+      .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(1000))
+      .force('charge', d3.forceManyBody().strength(-2000))
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
-      .force('collision', d3.forceCollide().radius(50));
+      .force('collision', d3.forceCollide().radius(100));
 
   const linkGroup = svg.append('g').attr('class', 'links');
   const nodeGroup = svg.append('g').attr('class', 'nodes');
@@ -434,17 +432,40 @@ function linkArc(d: any) {
     .data(consolidatedEdges)
     .enter().append('path')
     .attr('stroke', (d) => colorScale(d.type))
+    .attr('text-anchor', 'middle')
     .attr('fill', 'none') // Prevent the path from being filled
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-
+  
+  
   const linkText = linkGroup
       .selectAll('.link-text')
       .data(consolidatedEdges)
       .enter().append('text')
       .attr('class', 'link-text')
       .text((d) => `${d.type}: ${d.count}`);
+      const offsetRatio = 0.5; // Adjust this value as needed; 0.5 represents the midpoint of the curve.
 
+      linkText
+          .attr('x', (d: any) => {
+              const dx = d.target.x - d.source.x;
+              const dy = d.target.y - d.source.y;
+              const qx = d.source.x + dx * offsetRatio;
+              return qx;
+          })
+          .attr('y', (d: any) => {
+              const dy = d.target.y - d.source.y;
+              const dx = d.target.x - d.source.x;
+              const qy = d.source.y + dy * offsetRatio;
+              return qy;
+          })
+          .attr('transform', (d: any) => {
+              const dx = d.target.x - d.source.x;
+              const dy = d.target.y - d.source.y;
+              const rotation = Math.atan2(dy, dx) * (180 / Math.PI);
+              return `rotate(${rotation}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
+          })
+          .text((d: any) => `${d.type}: ${d.count}`);
   const nodes = nodeGroup.selectAll('.node-group')
       .data(clusterNodes)
       .enter().append('g')
@@ -460,15 +481,36 @@ function linkArc(d: any) {
       .style('font-weight', 'bold')
       .text((d) => `${d.name}: ${d.properties.amount}`);
 
-  simulation.on('tick', () => {
-      links.attr('d', linkArc);
-
-      linkText
-          .attr('x', (d: any) => (d.source.x + d.target.x) / 2)
-          .attr('y', (d: any) => (d.source.y + d.target.y) / 2);
-
-      nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
-  });
+      simulation.on('tick', () => {
+        links.attr('d', linkArc);
+    
+        linkText
+            .attr('x', (d: any) => {
+                const dx = d.target.x - d.source.x;
+                const dy = d.target.y - d.source.y;
+                const dr = Math.sqrt(dx * dx + dy * dy);
+                const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 130; 
+                const qx = d.source.x + dx / 2 + offset;
+                return qx;
+            })
+            .attr('y', (d: any) => {
+                const dy = d.target.y - d.source.y;
+                const dx = d.target.x - d.source.x;
+                const dr = Math.sqrt(dx * dx + dy * dy);
+                const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 90; 
+                const qy = d.source.y + dy / 2 + offset;
+                return qy;
+            })
+            .attr('transform', (d: any) => {
+                const dx = d.target.x - d.source.x;
+                const dy = d.target.y - d.source.y;
+                const rotation = Math.atan2(dy, dx) * (390 / Math.PI);
+                return `rotate(${rotation}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
+            })
+            .text((d: any) => `${d.type}: ${d.count}`);
+    
+        nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
+    });
 
   this.svg = svg;
   this.zoomBehavior = zoomBehavior;
