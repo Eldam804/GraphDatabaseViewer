@@ -210,7 +210,7 @@ export class CanvasViewComponent implements OnChanges{
     const additionalRadius = 3;  // Increment for each additional attribute beyond a threshold
     const threshold = 3;  // Base radius corresponds to this number of attributes
     const wordThreshold = 10;
-    
+    return baseRadius;
     if (attributeCount <= threshold && wordLenght <= wordThreshold) return baseRadius;
     if(attributeCount >= wordLenght){
       return baseRadius + (attributeCount - threshold) * additionalRadius
@@ -230,7 +230,7 @@ export class CanvasViewComponent implements OnChanges{
     // Random node positions
 
     const simulation = d3.forceSimulation(this.nodes)
-      .force('link', d3.forceLink(this.edges).id((d: any) => d.id).distance(400)) // Increased distance
+      .force('link', d3.forceLink(this.edges).id((d: any) => d.id).distance(100)) // Increased distance
       .force('charge', d3.forceManyBody().strength(-300)) // Increased repulsion
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
       .force('collision', d3.forceCollide().radius((d: any) => {
@@ -238,16 +238,31 @@ export class CanvasViewComponent implements OnChanges{
         const longestWordLength = getLongestWordLength(d.properties);
         return computeCircleRadius(attributeCount, longestWordLength) + 200; // Added some extra spacing
     }));
+    let linkIndex: any = {};
+    this.edges.forEach((edge, i) => {
+      let ids = [edge.source.id, edge.target.id].sort();
+      let id = ids.join("-");
+      if (!linkIndex[id]) {
+        linkIndex[id] = { total: 0, maxIndex: 0 };
+      }
+      linkIndex[id].maxIndex++;
+      edge.linknum = linkIndex[id].maxIndex;
+    });
+    console.debug("EDGES:");
+    console.debug(linkIndex);
 
     const linkGroup = svg.append('g').attr('class', 'links');
     const nodeGroup = svg.append('g').attr('class', 'nodes');
 
     const links = linkGroup
-    .selectAll('line')
+    .selectAll('path')
     .data(this.edges)
-    .enter().append('line')
-    .attr('stroke', (d: any) => colorScale(d.type))
-    .attr('stroke-width', 2);
+    .enter().append('path')
+    .attr('stroke', (d) => colorScale(d.type))
+    .attr('text-anchor', 'middle')
+    .attr('fill', 'none') // Prevent the path from being filled
+    .attr('stroke-width', 2)
+    .attr('fill', 'none');
 
     const lineGenerator = d3.line()
         .x((d: any) => d.x)
@@ -268,24 +283,30 @@ export class CanvasViewComponent implements OnChanges{
     })
     .attr('fill', (d: any) => colorScale(d.name));
 
+    function truncateText(text: any, maxLength: any) {
+      return text.length > maxLength ? text.slice(0, maxLength - 3) + '...' : text;
+  }
     nodes.append('text')
         .attr('dy', -25)
+        //.attr('textLength', 45)  // Setting maximum width to a value slightly less than 50
+        //.attr('lengthAdjust', 'spacingAndGlyphs')
         .style('text-anchor', 'middle')
         .style('font-weight', 'bold')
-        .text((d: any) => d.name);
+        .text((d: any) => truncateText(d.name, 10));
 
         nodes.each(function(d: any) {
           const node = d3.select(this);
-          const attributes = Object.entries(d.properties);
-          let yPosition = 5; // Starting position for the first attribute
-          const lineHeight = 15; // Height for each line
+          const attributes = Object.entries(d.properties).slice(0, 3);
+          let yPosition = 5;
+          const lineHeight = 15;
       
           attributes.forEach(([key, value], index) => {
               node.append('text')
                   .attr('dy', yPosition + (index * lineHeight))
                   .attr('dx', 0)
+                  .attr('lengthAdjust', 'spacingAndGlyphs')
                   .style('text-anchor', 'middle')
-                  .text(`${key}: ${value}`);
+                  .text(`${truncateText(key, 6)}: ${truncateText(value, 5)}`);
           });
       });
 
@@ -294,7 +315,30 @@ export class CanvasViewComponent implements OnChanges{
       .attr('x1', (d: any) => d.source.x)
       .attr('y1', (d: any) => d.source.y)
       .attr('x2', (d: any) => d.target.x)
-      .attr('y2', (d: any) => d.target.y);
+      .attr('y2', (d: any) => d.target.y)
+      .attr('d', (d: any) => {
+        let dx = d.target.x - d.source.x,
+            dy = d.target.y - d.source.y;
+        
+        const linkInfo = linkIndex[[d.source.id, d.target.id].sort().join("-")];
+        const totalLinks = linkInfo.maxIndex;
+        
+        // Calculate an offset for the curvature based on linknum
+        const offset = (d.linknum - Math.ceil(totalLinks)) - 2;
+        
+        // Define a curvature multiplier. If even total links, -1 and 1 are used, otherwise 0, -1, and 1
+        const multiplier = totalLinks % 2 === 0 ?
+            (d.linknum <= totalLinks / 2 ? 1 : -1) :
+            (d.linknum < Math.floor(totalLinks / 2) ? 1 : d.linknum > Math.floor(totalLinks / 2) ? -1 : 0);
+        let dr;
+        if(totalLinks == 1){
+          dr = 0;
+        }else{
+          dr = Math.sqrt(dx * dx + dy * dy) + (offset * multiplier * 80);
+        }
+        //dr = 200 * offset * multiplier;
+        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0 1,${d.target.x},${d.target.y}`;
+    });
         nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
     });
 
