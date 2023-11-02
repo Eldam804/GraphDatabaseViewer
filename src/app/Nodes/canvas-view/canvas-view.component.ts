@@ -4,6 +4,8 @@ import * as d3 from 'd3';
 import { ElementRef, OnInit, ViewChild } from '@angular/core';
 import { zoom, zoomIdentity } from 'd3-zoom';
 import { forkJoin } from 'rxjs';
+import { NodeDetailDialogComponent } from 'src/app/Components/node-detail-dialog/node-detail-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-canvas-view',
@@ -23,7 +25,7 @@ export class CanvasViewComponent implements OnChanges{
   @Input() classicView: Boolean = true;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor(private service: DriverService){
+  constructor(private service: DriverService, public dialog: MatDialog){
     this.getAllNodes();
   }
 
@@ -45,6 +47,20 @@ export class CanvasViewComponent implements OnChanges{
       this.handleCanvasDataChange();
     }
   }
+
+  displayData(nodeData: any): void{
+    const nodeName = nodeData.name;
+    const properties = nodeData.properties;
+    console.debug(properties);
+    const data = {nodeName, properties};
+    const dialogRef = this.dialog.open(NodeDetailDialogComponent, {
+      data
+    });
+    dialogRef.afterClosed().subscribe((result: any) => {
+      console.log('Modal closes', result);
+    })
+  }
+
 
   handleCanvasDataChange() {
     console.debug("CANVAS CHANGE:")
@@ -271,9 +287,21 @@ export class CanvasViewComponent implements OnChanges{
     const nodes = nodeGroup.selectAll('.node-group')
         .data(this.nodes)
         .enter().append('g')
-        .attr('class', 'node-group');
+        .attr('class', 'node-group')
+        .on('click', (event, nodeData) => this.displayData(nodeData));
 
-    
+        nodes.on('mouseenter', function(event, d) {
+          // Using D3's selection to select the current node and change its cursor
+          d3.select(this).style('cursor', 'pointer');
+          
+          // Optionally, change other styles for more visual feedback
+          d3.select(this).style('fill', 'rgba(0, 128, 255, 0.8)');
+        })
+        .on('mouseleave', function(event, d) {
+          // Reset the cursor and other styles when the mouse leaves the node
+          d3.select(this).style('cursor', 'default');
+          d3.select(this).style('fill', 'black');
+        });
 
     nodes.append('circle')
     .attr('r', (d: any) => {
