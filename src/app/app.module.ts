@@ -25,6 +25,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import { NodeMapDialogComponent } from './Components/node-map-dialog/node-map-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NodeDetailDialogComponent } from './Components/node-detail-dialog/node-detail-dialog.component';
+import { NodeSingleDialogComponent } from './Components/node-single-dialog/node-single-dialog.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -36,6 +37,7 @@ import { NodeDetailDialogComponent } from './Components/node-detail-dialog/node-
     DBConnectDialogComponent,
     NodeMapDialogComponent,
     NodeDetailDialogComponent,
+    NodeSingleDialogComponent,
   ],
   exports: [
     AppComponent,

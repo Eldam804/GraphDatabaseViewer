@@ -6,6 +6,7 @@ import { zoom, zoomIdentity } from 'd3-zoom';
 import { forkJoin } from 'rxjs';
 import { NodeDetailDialogComponent } from 'src/app/Components/node-detail-dialog/node-detail-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { NodeSingleDialogComponent } from 'src/app/Components/node-single-dialog/node-single-dialog.component';
 
 @Component({
   selector: 'app-canvas-view',
@@ -27,11 +28,13 @@ export class CanvasViewComponent implements OnChanges{
 
   constructor(private service: DriverService, public dialog: MatDialog){
     this.getAllNodes();
+
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
     if(changes.classicView && !changes.classicView.firstChange){
+      console.debug("change happend")
       console.debug(this.classicView);
       if(this.classicView){
         console.debug(this.nodes);
@@ -59,6 +62,44 @@ export class CanvasViewComponent implements OnChanges{
     dialogRef.afterClosed().subscribe((result: any) => {
       console.log('Modal closes', result);
     })
+  }
+
+  displayNodes(nodeData: any): void{
+    const nodeQuery = "MATCH(n:" + nodeData.name + ") RETURN n";
+    const edgeQuery = "MATCH(:" + nodeData.name  + ")-[r]->(:" + nodeData.name + ") RETURN r";
+    let modalNodes: any = [];
+    let modalEdges: any = [];
+    console.debug(nodeData);
+    forkJoin([
+      this.service.sendQuery(nodeQuery),
+      this.service.sendQuery(edgeQuery)
+    ]).subscribe(([nodesData, edgesData]) => {
+      nodesData.forEach((nodeData: any) => {
+          modalNodes.push({
+              id: nodeData._fields[0].identity,
+              name: nodeData._fields[0].labels[0],
+              properties: nodeData._fields[0].properties 
+          });
+      });
+      console.debug("DATA RETURNED::")
+      console.debug(nodesData);
+      console.debug(edgesData);
+      edgesData.forEach((edgeData: any) => {
+          modalEdges.push({
+              source: edgeData._fields[0].start,
+              target: edgeData._fields[0].end,
+              type: edgeData._fields[0].type
+          });
+      });
+      let modalView = true;
+      const data = {modalEdges, modalNodes, modalView};
+      const dialogRef = this.dialog.open(NodeSingleDialogComponent, {
+        data
+      });
+      dialogRef.afterClosed().subscribe((result: any) => {
+        console.log('Modal closes', result);
+      })
+    });
   }
 
 
@@ -364,6 +405,7 @@ export class CanvasViewComponent implements OnChanges{
         }else{
           dr = Math.sqrt(dx * dx + dy * dy) + (offset * multiplier * 80);
         }
+        console.debug(dr % 360);
         //dr = 200 * offset * multiplier;
         return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0 1,${d.target.x},${d.target.y}`;
     });
@@ -541,7 +583,8 @@ function linkArc(d: any) {
   const nodes = nodeGroup.selectAll('.node-group')
       .data(clusterNodes)
       .enter().append('g')
-      .attr('class', 'node-group');
+      .attr('class', 'node-group')
+      .on('click', (event, nodeData) => this.displayNodes(nodeData));
 
   nodes.append('circle')
       .attr('r', 50)
