@@ -305,6 +305,7 @@ export class CanvasViewComponent implements OnChanges{
       linkIndex[id].maxIndex++;
       edge.linknum = linkIndex[id].maxIndex;
     });
+    
     console.debug("EDGES:");
     console.debug(linkIndex);
 
@@ -378,39 +379,32 @@ export class CanvasViewComponent implements OnChanges{
                   .text(`${truncateText(key, 6)}: ${truncateText(value, 5)}`);
           });
       });
-
-    simulation.on('tick', () => {
-      links
-      .attr('x1', (d: any) => d.source.x)
-      .attr('y1', (d: any) => d.source.y)
-      .attr('x2', (d: any) => d.target.x)
-      .attr('y2', (d: any) => d.target.y)
-      .attr('d', (d: any) => {
-        let dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y;
-        
+      function linkArc(d: any) {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        // Retrieve the link info based on the edge's id
         const linkInfo = linkIndex[[d.source.id, d.target.id].sort().join("-")];
-        const totalLinks = linkInfo.maxIndex;
-        
-        // Calculate an offset for the curvature based on linknum
-        const offset = (d.linknum - Math.ceil(totalLinks)) - 2;
-        
-        // Define a curvature multiplier. If even total links, -1 and 1 are used, otherwise 0, -1, and 1
-        const multiplier = totalLinks % 2 === 0 ?
-            (d.linknum <= totalLinks / 2 ? 1 : -1) :
-            (d.linknum < Math.floor(totalLinks / 2) ? 1 : d.linknum > Math.floor(totalLinks / 2) ? -1 : 0);
-        let dr;
-        if(totalLinks == 1){
-          dr = 0;
-        }else{
-          dr = Math.sqrt(dx * dx + dy * dy) + (offset * multiplier * 80);
+        const totalLinks = linkInfo.total; // Make sure total is being updated somewhere in the code, or use maxIndex if you're using it to count links
+        const linkNumber = d.linknum; // Use the correct property that you assigned during edge setup
+      
+        // The offset calculation might need to be tweaked depending on the desired distance between links
+        let offset = (linkNumber - (totalLinks - 1) / 2) * 30; // Modify the multiplier for the curve spread
+        if(linkNumber % 2 == 0){
+          offset *= -1
         }
-        console.debug(dr % 360);
-        //dr = 200 * offset * multiplier;
-        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0 1,${d.target.x},${d.target.y}`;
-    });
-        nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
-    });
+        let qx = d.source.x + dx / 2 + offset;
+        let qy = d.source.y + dy / 2 + offset;
+        if(totalLinks == 1){
+          qx = 0;
+          qy = 0;
+        }
+        return `M${d.source.x},${d.source.y}Q${qx},${qy} ${d.target.x},${d.target.y}`;
+      }
+      simulation.on('tick', () => {
+        links.attr('d', linkArc);
+        nodes.attr('transform', d => `translate(${d.x},${d.y})`); // Update the node positions
+      });
 
     this.svg = svg;
     this.zoomBehavior = zoomBehavior;
