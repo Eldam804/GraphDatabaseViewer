@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import * as d3 from 'd3';
 import { NodeDetailDialogComponent } from '../node-detail-dialog/node-detail-dialog.component';
 import { Edge, Node } from 'src/app/Models/nodes';
+import { NodeMapDialogComponent } from '../node-map-dialog/node-map-dialog.component';
 
 @Component({
   selector: 'app-node-single-dialog',
@@ -14,6 +15,7 @@ export class NodeSingleDialogComponent implements AfterViewInit {
   @ViewChild('svg') svgRef!: ElementRef;
   public edges: Array<Edge> = [];
   public nodes: Array<Node> = [];
+  private nodeInformation: any;
   private svg: any;
   private zoomBehavior: any;
   constructor(
@@ -31,6 +33,17 @@ export class NodeSingleDialogComponent implements AfterViewInit {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+  openModal(){
+    
+    const dialogRef = this.dialog.open(NodeMapDialogComponent, {
+      data: this.nodeInformation
+    });
+    console.debug(this.nodeInformation);
+    
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
   }
   displayData(nodeData: any): void{
     const nodeName = nodeData.name;
@@ -68,6 +81,28 @@ export class NodeSingleDialogComponent implements AfterViewInit {
 
     return colors;
 }
+  getNodeCount(nodeName: string){
+    var count: number = 0;
+    console.debug(nodeName);
+    for (let index = 0; index < this.nodes.length; index++) {
+      if(this.nodes[index].name == nodeName){
+          count++;
+      }
+    }
+    return count;
+  }
+
+  getEdgeCount(nodeType: string){
+    var count: number = 0;
+    console.debug(nodeType);
+    for (let index = 0; index < this.edges.length; index++) {
+      if(this.edges[index].type == nodeType){
+          count++;
+      }
+    }
+    return count;
+  }
+
   createGraph() {
     const svgWidth = window.innerWidth;
     const svgHeight = window.innerHeight;
@@ -88,19 +123,23 @@ export class NodeSingleDialogComponent implements AfterViewInit {
     //const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10) // or any other color scheme
     //  .domain(edgeTypes);
     // Select SVG and set dimensions
+    console.debug("NODE TYPES: ", nodeTypes);
+    console.debug("EDGE TYPES: ",edgeTypes);
     const nodeTypesWithColors = nodeTypes.map(nodeType => ({
       nodeType: nodeType,
-      color: colorScale(nodeType)
+      color: colorScale(nodeType),
+      length: this.getNodeCount(nodeType)
     }));
   
   const edgeTypesWithColors = edgeTypes.map(edgeType => ({
       relType: edgeType,
-      color: colorScale(edgeType)
+      color: colorScale(edgeType),
+      length: this.getEdgeCount(edgeType)
     }));
 
   // Emit the combined data (types and colors)
   //this.nodeInfo.emit([nodeTypesWithColors, edgeTypesWithColors]);
-  
+  this.nodeInformation = [nodeTypesWithColors, edgeTypesWithColors];
     const svg = d3.select(this.svgRef.nativeElement)
       .style('background-color', 'transparent')
         .attr('width', svgWidth)

@@ -139,6 +139,27 @@ export class CanvasViewComponent implements OnChanges{
     }
     
   }
+  getNodeCount(nodeName: string){
+    var count: number = 0;
+    console.debug(nodeName);
+    for (let index = 0; index < this.nodes.length; index++) {
+      if(this.nodes[index].name == nodeName){
+          count++;
+      }
+    }
+    return count;
+  }
+
+  getEdgeCount(nodeType: string){
+    var count: number = 0;
+    console.debug(nodeType);
+    for (let index = 0; index < this.edges.length; index++) {
+      if(this.edges[index].type == nodeType){
+          count++;
+      }
+    }
+    return count;
+  }
 
   getAllNodes(){
     forkJoin([
@@ -217,14 +238,16 @@ export class CanvasViewComponent implements OnChanges{
     //const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10) // or any other color scheme
     //  .domain(edgeTypes);
     // Select SVG and set dimensions
-    const nodeTypesWithColors = nodeTypes.map(nodeType => ({
+    let nodeTypesWithColors = nodeTypes.map(nodeType => ({
       nodeType: nodeType,
-      color: colorScale(nodeType)
+      color: colorScale(nodeType),
+      length: this.getNodeCount(nodeType)
     }));
   
-  const edgeTypesWithColors = edgeTypes.map(edgeType => ({
+    let edgeTypesWithColors = edgeTypes.map(edgeType => ({
       relType: edgeType,
-      color: colorScale(edgeType)
+      color: colorScale(edgeType),
+      length: this.getEdgeCount(edgeType)
     }));
 
   // Emit the combined data (types and colors)
@@ -482,19 +505,30 @@ consolidatedEdges.forEach((d: any, i) => {
     }
 
     if (d.source.linkCount[d.target.id]) {
-        d.source.linkCount[d.target.id]++;
+      if(d.source.id > d.target.id){
+        d.source.linkCount[d.target.id]+=1;
+      }
+        d.source.linkCount[d.target.id]+=1;
     } else {
         d.source.linkCount[d.target.id] = 1;
     }
-    
+    console.debug("CONSOLIDATED EDGES:")
+    console.debug(consolidatedEdges);
     // Store the index of this link among the links between the same nodes
     d.linkIndex = d.source.linkCount[d.target.id] - 1;
+});
+consolidatedEdges.forEach((d: any, i) => {
+  if(d.source.id > d.target.id){
+    d.source.linkCount[d.target.id] *= -1;
+  }
 });
 function linkArc(d: any) {
     const dx = d.target.x - d.source.x,
       dy = d.target.y - d.source.y,
       dr = Math.sqrt(dx * dx + dy * dy);
-    const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 200; 
+    const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 70;
+    console.debug("CALCULATED OFFSET:")
+    console.debug(offset); 
     const qx = d.source.x + dx / 2 + offset, qy = d.source.y + dy / 2 + offset;
     return `M${d.source.x},${d.source.y}Q${qx},${qy} ${d.target.x},${d.target.y}`;
   }
@@ -527,14 +561,14 @@ function linkArc(d: any) {
   svg.call(zoomBehavior);
 
   const simulation = d3.forceSimulation(clusterNodes as any)
-      .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(1000))
+      .force('link', d3.forceLink(consolidatedEdges).id((d: any) => d.id).distance(2000))
       .force('charge', d3.forceManyBody().strength(-2000))
       .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
-      .force('collision', d3.forceCollide().radius(100));
+      .force('collision', d3.forceCollide().radius(400));
 
   const linkGroup = svg.append('g').attr('class', 'links');
   const nodeGroup = svg.append('g').attr('class', 'nodes');
-
+  
   const links = linkGroup
     .selectAll('path')
     .data(consolidatedEdges)
@@ -544,36 +578,46 @@ function linkArc(d: any) {
     .attr('fill', 'none') // Prevent the path from being filled
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-  
+
+  links.attr('d', linkArc)
+    .attr('id', (d, i) => 'linkPath' + i);
+    
+  linkGroup.selectAll('.link-text')
+    .data(consolidatedEdges)
+    .enter()
+    .append('text')
+    .attr('class', 'link-text')
+    .append('textPath') // Append a textPath element
+    .attr('xlink:href', (d, i) => '#linkPath' + i) // This references the unique ID of the path
+    .style("text-anchor", "middle") // To center the text on the path
+    .attr('startOffset', '50%') // To offset the text to the middle of the path
+    .text((d) => `${d.type}: ${d.count}`);
   
   const linkText = linkGroup
-      .selectAll('.link-text')
-      .data(consolidatedEdges)
-      .enter().append('text')
-      .attr('class', 'link-text')
-      .text((d) => `${d.type}: ${d.count}`);
-      const offsetRatio = 0.5; // Adjust this value as needed; 0.5 represents the midpoint of the curve.
+  .selectAll('.link-text')
+  .data(consolidatedEdges)
+  .enter().append('text')
+  .attr('class', 'link-text')
+  .attr('text-anchor', 'middle') // Ensure the anchor of the text is in the middle
+  .text((d) => `${d.type}: ${d.count}`); // Set the text only once
 
-      linkText
-          .attr('x', (d: any) => {
-              const dx = d.target.x - d.source.x;
-              const dy = d.target.y - d.source.y;
-              const qx = d.source.x + dx * offsetRatio;
-              return qx;
-          })
-          .attr('y', (d: any) => {
-              const dy = d.target.y - d.source.y;
-              const dx = d.target.x - d.source.x;
-              const qy = d.source.y + dy * offsetRatio;
-              return qy;
-          })
-          .attr('transform', (d: any) => {
-              const dx = d.target.x - d.source.x;
-              const dy = d.target.y - d.source.y;
-              const rotation = Math.atan2(dy, dx) * (180 / Math.PI);
-              return `rotate(${rotation}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
-          })
-          .text((d: any) => `${d.type}: ${d.count}`);
+  linkText
+    .attr('x', (d: any) => {
+      return (d.source.x + d.target.x) / 2; // Midpoint x of the source and target
+    })
+    .attr('y', (d: any) => {
+      return (d.source.y + d.target.y) / 2; // Midpoint y of the source and target
+   })
+    .attr('dy', '.35em') // Center the text vertically
+    .attr('transform', (d: any) => {
+      const dx = d.target.x - d.source.x;
+      const dy = d.target.y - d.source.y;
+      const rotation = Math.atan2(dy, dx) * (180 / Math.PI); // Calculate the correct rotation
+      const px = (d.source.x + d.target.x) / 2; // Midpoint x for rotation
+      const py = (d.source.y + d.target.y) / 2; // Midpoint y for rotation
+      return `rotate(${rotation},${px},${py})`; // Rotate around the midpoint
+    });
+          
   const nodes = nodeGroup.selectAll('.node-group')
       .data(clusterNodes)
       .enter().append('g')
@@ -592,32 +636,7 @@ function linkArc(d: any) {
 
       simulation.on('tick', () => {
         links.attr('d', linkArc);
-    
-        linkText
-            .attr('x', (d: any) => {
-                const dx = d.target.x - d.source.x;
-                const dy = d.target.y - d.source.y;
-                const dr = Math.sqrt(dx * dx + dy * dy);
-                const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 130; 
-                const qx = d.source.x + dx / 2 + offset;
-                return qx;
-            })
-            .attr('y', (d: any) => {
-                const dy = d.target.y - d.source.y;
-                const dx = d.target.x - d.source.x;
-                const dr = Math.sqrt(dx * dx + dy * dy);
-                const offset = (d.linkIndex - d.source.linkCount[d.target.id] / 2) * 90; 
-                const qy = d.source.y + dy / 2 + offset;
-                return qy;
-            })
-            .attr('transform', (d: any) => {
-                const dx = d.target.x - d.source.x;
-                const dy = d.target.y - d.source.y;
-                const rotation = Math.atan2(dy, dx) * (390 / Math.PI);
-                return `rotate(${rotation}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
-            })
-            .text((d: any) => `${d.type}: ${d.count}`);
-    
+        
         nodes.attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
     });
 
@@ -627,12 +646,14 @@ function linkArc(d: any) {
   // Prepare data for modal window display
   const nodeTypesWithColors = nodeTypes.map(nodeType => ({
     nodeType: nodeType,
-    color: colorScale(nodeType)
+    color: colorScale(nodeType),
+    length: this.getNodeCount(nodeType)
   }));
 
   const edgeTypesWithColors = edgeTypes.map(edgeType => ({
     relType: edgeType,
-    color: colorScale(edgeType)
+    color: colorScale(edgeType),
+    length: this.getEdgeCount(edgeType)
   }));
 
   // Emit the combined data (types and colors) for the modal
