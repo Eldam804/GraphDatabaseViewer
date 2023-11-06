@@ -1,5 +1,16 @@
-<div mat-dialog-content>
-    <div #graphContainer class="graph-container">
-        <svg #svg></svg>
+<div >
+    <mat-toolbar color="primary">
+        <mat-toolbar-row>
+            <span>{{data.nodeName}}: {{nodes.length}}</span>
+            <span class="spacer"></span>
+            <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="onNoClick()" matTooltip="Classic View">
+                <mat-icon>close</mat-icon>
+            </button>
+          </mat-toolbar-row>
+    </mat-toolbar>
+    <div mat-dialog-content class="mat-dialog-content">
+        <div #graphContainer class="graph-container">
+            <svg #svg></svg>
+        </div>
     </div>
 </div>

@@ -7,6 +7,7 @@ import { forkJoin } from 'rxjs';
 import { NodeDetailDialogComponent } from 'src/app/Components/node-detail-dialog/node-detail-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NodeSingleDialogComponent } from 'src/app/Components/node-single-dialog/node-single-dialog.component';
+import { Edge, Node } from 'src/app/Models/nodes';
 
 @Component({
   selector: 'app-canvas-view',
@@ -16,13 +17,13 @@ import { NodeSingleDialogComponent } from 'src/app/Components/node-single-dialog
 export class CanvasViewComponent implements OnChanges{
   @ViewChild('svg') svgRef!: ElementRef;
   @ViewChild('graphContainer') graphContainerRef!: ElementRef;  
-  public nodes: Array<any> = [];
-  public edges: Array<any> = [];
+  public nodes: Array<Node> = [];
+  public edges: Array<Edge> = [];
   private svg: any;
   private zoomBehavior: any;
   @Input() canvasData: any;
-  @Input() nodeData: any;
-  @Input() edgeData: any;
+  @Input() nodeData: Array<Node> = [];
+  @Input() edgeData: Array<Edge> = [];
   @Input() classicView: Boolean = true;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
@@ -81,9 +82,6 @@ export class CanvasViewComponent implements OnChanges{
               properties: nodeData._fields[0].properties 
           });
       });
-      console.debug("DATA RETURNED::")
-      console.debug(nodesData);
-      console.debug(edgesData);
       edgesData.forEach((edgeData: any) => {
           modalEdges.push({
               source: edgeData._fields[0].start,
@@ -92,9 +90,11 @@ export class CanvasViewComponent implements OnChanges{
           });
       });
       let modalView = true;
-      const data = {modalEdges, modalNodes, modalView};
+      const nodeName = nodeData.name;
+      const data = {modalEdges, modalNodes, modalView, nodeName};
       const dialogRef = this.dialog.open(NodeSingleDialogComponent, {
-        data
+        data,
+        disableClose: true,
       });
       dialogRef.afterClosed().subscribe((result: any) => {
         console.log('Modal closes', result);
