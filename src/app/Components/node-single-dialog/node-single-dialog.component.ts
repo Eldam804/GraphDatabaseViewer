@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, Inject, ViewChild } from '@angula
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import * as d3 from 'd3';
 import { NodeDetailDialogComponent } from '../node-detail-dialog/node-detail-dialog.component';
+import { Edge, Node } from 'src/app/Models/nodes';
 
 @Component({
   selector: 'app-node-single-dialog',
@@ -11,8 +12,8 @@ import { NodeDetailDialogComponent } from '../node-detail-dialog/node-detail-dia
 export class NodeSingleDialogComponent implements AfterViewInit {
   modalView: boolean = true;
   @ViewChild('svg') svgRef!: ElementRef;
-  public edges: Array<any> = [];
-  public nodes: Array<any> = [];
+  public edges: Array<Edge> = [];
+  public nodes: Array<Node> = [];
   private svg: any;
   private zoomBehavior: any;
   constructor(
