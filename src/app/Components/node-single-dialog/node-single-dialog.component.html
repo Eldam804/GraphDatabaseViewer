@@ -3,6 +3,9 @@
         <mat-toolbar-row>
             <span>{{data.nodeName}}: {{nodes.length}}</span>
             <span class="spacer"></span>
+            <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openModal()" matTooltip="Node/Edge Legend">
+                <mat-icon>menu_book</mat-icon>
+              </button>
             <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="onNoClick()" matTooltip="Classic View">
                 <mat-icon>close</mat-icon>
             </button>
