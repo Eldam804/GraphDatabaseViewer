@@ -13,6 +13,7 @@ import { NodeMapDialogComponent } from '../node-map-dialog/node-map-dialog.compo
 export class NodeSingleDialogComponent implements AfterViewInit {
   modalView: boolean = true;
   @ViewChild('svg') svgRef!: ElementRef;
+  @ViewChild('graphContainer') graphContainerRef!: ElementRef; 
   public edges: Array<Edge> = [];
   public nodes: Array<Node> = [];
   private nodeInformation: any;
@@ -221,6 +222,10 @@ export class NodeSingleDialogComponent implements AfterViewInit {
     const linkGroup = svg.append('g').attr('class', 'links');
     const nodeGroup = svg.append('g').attr('class', 'nodes');
 
+    const tooltip = d3.select(this.graphContainerRef.nativeElement).append("div")
+    .attr('class', 'tooltip');
+
+
     const links = linkGroup
     .selectAll('path')
     .data(this.edges)
@@ -230,6 +235,17 @@ export class NodeSingleDialogComponent implements AfterViewInit {
     .attr('fill', 'none') // Prevent the path from being filled
     .attr('stroke-width', 2)
     .attr('fill', 'none');
+
+    links.on('mouseenter', function(event, d) {
+      tooltip
+        .style('opacity', 1)
+        .style('left', `${event.pageX}px`)
+        .style('top', `${event.pageY}px`)
+        .html(`Node data: ${d.type}`); // replace with your actual node data
+    })
+    .on('mouseleave', function(d) {
+      tooltip.style('opacity', 0);
+    });
 
     const lineGenerator = d3.line()
         .x((d: any) => d.x)

@@ -335,16 +335,33 @@ export class CanvasViewComponent implements OnChanges{
     const linkGroup = svg.append('g').attr('class', 'links');
     const nodeGroup = svg.append('g').attr('class', 'nodes');
 
+    const tooltip = d3.select(this.graphContainerRef.nativeElement).append("div")
+    .attr('class', 'tooltip');
+
+
     const links = linkGroup
     .selectAll('path')
     .data(this.edges)
     .enter().append('path')
     .attr('stroke', (d) => colorScale(d.type))
-    .attr('text-anchor', 'middle')
     .attr('fill', 'none') // Prevent the path from being filled
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-
+    
+    links.on('mouseenter', function(event, d) {
+      tooltip
+        .style('opacity', 1)
+        .style('left', `${event.pageX}px`)
+        .style('top', `${event.pageY}px`)
+        .html(`Node data: ${d.type}`); // replace with your actual node data
+    })
+    .on('mouseleave', function(d) {
+      tooltip.style('opacity', 0);
+    });
+    /*const tooltip = d3.select(".graph-container").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+  */
     const lineGenerator = d3.line()
         .x((d: any) => d.x)
         .y((d: any) => d.y);
@@ -623,6 +640,18 @@ function linkArc(d: any) {
       .enter().append('g')
       .attr('class', 'node-group')
       .on('click', (event, nodeData) => this.displayNodes(nodeData));
+      nodes.on('mouseenter', function(event, d) {
+        // Using D3's selection to select the current node and change its cursor
+        d3.select(this).style('cursor', 'pointer');
+        
+        // Optionally, change other styles for more visual feedback
+        d3.select(this).style('fill', 'rgba(0, 128, 255, 0.8)');
+      })
+      .on('mouseleave', function(event, d) {
+        // Reset the cursor and other styles when the mouse leaves the node
+        d3.select(this).style('cursor', 'default');
+        d3.select(this).style('fill', 'black');
+      });
 
   nodes.append('circle')
       .attr('r', 50)
