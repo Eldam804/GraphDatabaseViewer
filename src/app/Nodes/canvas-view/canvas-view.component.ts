@@ -8,32 +8,63 @@ import { NodeDetailDialogComponent } from 'src/app/Components/node-detail-dialog
 import { MatDialog } from '@angular/material/dialog';
 import { NodeSingleDialogComponent } from 'src/app/Components/node-single-dialog/node-single-dialog.component';
 import { Edge, Node } from 'src/app/Models/nodes';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-canvas-view',
   templateUrl: './canvas-view.component.html',
   styleUrls: ['./canvas-view.component.css']
 })
-export class CanvasViewComponent implements OnChanges{
+export class CanvasViewComponent implements OnChanges, OnInit{
   @ViewChild('svg') svgRef!: ElementRef;
   @ViewChild('graphContainer') graphContainerRef!: ElementRef;  
   public nodes: Array<Node> = [];
   public edges: Array<Edge> = [];
+  public originalNodes: Array<Node> = [];
+  public originalEdges: Array<Edge> = [];
   private svg: any;
   private zoomBehavior: any;
+  private credentialsSubscription!: Subscription;
+  private urlSubscription!: Subscription;
   @Input() canvasData: any;
   @Input() nodeData: Array<Node> = [];
   @Input() edgeData: Array<Edge> = [];
   @Input() classicView: Boolean = true;
+  @Input() restartView: Boolean = false;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService, public dialog: MatDialog){
-    this.getAllNodes();
-
+    //this.getAllNodes();
+    //this.originalNodes = this.nodes;
+    //this.originalEdges = this.edges;
+  }
+  ngOnInit() {
+    // Subscribe to the credentials observable
+    this.credentialsSubscription = this.service.credentials$.subscribe({
+      next: (credentials : any) => {
+        console.log('Credentials changed:', credentials);
+        // Call your method to fetch nodes here
+        this.getAllNodes();
+        this.originalNodes = this.nodes;
+        this.originalEdges = this.edges;
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
+    if (changes.restartView && changes.restartView.currentValue === true) {
+      console.debug("Restart view triggered");
+      this.restartView = false; // Reset the flag
+      this.nodes = this.originalNodes;
+      this.edges = this.originalEdges;
+      console.debug("CLASSIC VIEW: "+this.classicView);
+      if(this.classicView){
+        this.createGraph();
+      }else{
+        this.createClusterGraph();
+      }
+    }
     if(changes.classicView && !changes.classicView.firstChange){
       console.debug("change happend")
       console.debug(this.classicView);
@@ -162,6 +193,8 @@ export class CanvasViewComponent implements OnChanges{
   }
 
   getAllNodes(){
+    this.nodes = [];
+    this.edges = [];
     forkJoin([
       this.service.getAllNodes(),
       this.service.getAllEdges()
@@ -194,29 +227,15 @@ export class CanvasViewComponent implements OnChanges{
   });
   } 
   generateColors(n: number): string[] {
+    const palette: string[] = ['#808000', '#7b9800', '#73aa00', '#67b600', '#58bd00', '#48be00', '#36ba00', '#23b000', '#10a000', '#028c00', '#0f801a', '#1f7d35', '#287848', '#2d7058', '#306665', '#315a70', '#2f4a78', '#29387d', '#1e2280', '#000080']
+  
     const colors: string[] = [];
-    const usedHues: Set<number> = new Set();
-
-    // Generate a random number within a range, inclusive
-    const randomBetween = (min: number, max: number) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
-
     for (let i = 0; i < n; i++) {
-        let hue;
-        do {
-            hue = randomBetween(0, 359);
-        } while (usedHues.has(hue)); // Ensure the hue hasn't been used yet
-
-        usedHues.add(hue);
-        const saturation = randomBetween(60, 100);
-        const lightness = randomBetween(40, 60);
-
-        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+      colors.push(palette[i % palette.length]);
     }
-
+  
     return colors;
-}
+  }
   
   createGraph() {
     const svgWidth = window.innerWidth;

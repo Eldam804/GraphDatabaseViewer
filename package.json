@@ -1,12 +1,16 @@
 {
   "name": "graph-database-viewer",
   "version": "0.0.0",
+  "main": "electron.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "electron": "electron .",
+    "electron-build": "ng build --configuration=production && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "private": true,
   "dependencies": {
@@ -32,6 +36,9 @@
     "@angular/compiler-cli": "^16.1.0",
     "@types/d3": "^7.4.1",
     "@types/jasmine": "~4.3.0",
+    "electron": "^27.0.3",
+    "electron-builder": "^24.6.4",
+    "electron-packager": "^17.1.2",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -39,5 +46,22 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.1.3"
+  },
+  "build": {
+    "appId": "com.yourdomain.graphdatabaseviewer",
+    "productName": "Graph Database Viewer",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron.js"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    }
   }
 }

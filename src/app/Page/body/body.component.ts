@@ -1,5 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatDrawer } from '@angular/material/sidenav';
+import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 
 @Component({
   selector: 'app-body',
@@ -13,10 +14,27 @@ export class BodyComponent {
   public nodes: any;
   public edges: any;
   public nodeData: any;
+  public databaseSelected: boolean = true;
+  public restartView: boolean = false;
   classicView: boolean = true; // default value
+
+  constructor(private service: DriverService){
+    this.checkConnectivity();
+  }
+
+  checkConnectivity(){
+    this.service.checkDatabaseConnectivity().then(isConnected => {
+      this.databaseSelected = isConnected;
+    });
+  }
+
 
   handleViewChange(view: boolean) {
     this.classicView = view;
+  }
+  handleRestart(restart: boolean){
+    this.restartView = restart;
+    setTimeout(() => this.restartView = false, 0);
   }
   toggle() {
     console.debug("Helloo!!")

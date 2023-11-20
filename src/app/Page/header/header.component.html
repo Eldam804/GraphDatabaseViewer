@@ -5,6 +5,9 @@
       </mat-icon>
   </button>-->
     <span>Graph Database Viewer</span>
+      <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="restart()" matTooltip="Classic View">
+        <mat-icon>restart_alt</mat-icon>
+      </button>
     <span class="example-spacer"></span>
     <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="classicView()" matTooltip="Classic View">
       <mat-icon>hub</mat-icon>
@@ -13,6 +16,9 @@
       <mat-icon>share</mat-icon>
     </button>
     <span class="example-spacer"></span>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openConnectionModal()" matTooltip="Database connection">
+      <mat-icon>storage</mat-icon>
+    </button>
     <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="openModal()" matTooltip="Node/Edge Legend">
       <mat-icon>menu_book</mat-icon>
     </button>

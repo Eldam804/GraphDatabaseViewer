@@ -1,7 +1,36 @@
 <div mat-dialog-content>
-  <p>You're connected to {{data.dbName}}</p>
-  <mat-form-field>
-    <mat-label>Ip Address:</mat-label>
-    <input matInput [(ngModel)]="data.ipAddress">
-  </mat-form-field>
+  <form [formGroup]="credentialsForm">
+    <mat-horizontal-stepper [linear]="true" #stepper (selectionChange)="onStepChange($event)">
+      <mat-step [completed]="dbChecked">
+        <ng-template matStepLabel>Check Database</ng-template>
+        <div class="form-fields-container">
+          <mat-form-field>
+            <mat-label>URL</mat-label>
+            <input matInput formControlName="url" placeholder="URL" />
+          </mat-form-field>
+          <button class="check-button" mat-button matStepperNext (click)="checkDatabase()" [disabled]="loading">
+            <span *ngIf="!loading">Check</span>
+            <mat-spinner *ngIf="loading" diameter="30" mode="indeterminate"></mat-spinner>
+          </button>
+        </div>
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Enter Credentials</ng-template>
+        <div class="form-fields-container">
+          <mat-form-field>
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" placeholder="Username" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" placeholder="Password" type="password" />
+          </mat-form-field>
+          <button  class="check-button" mat-button mat-button (click)="onSubmit()">
+            <span *ngIf="!loading">Check</span>
+            <mat-spinner *ngIf="loading" diameter="30" mode="indeterminate"></mat-spinner>
+          </button>
+        </div>
+      </mat-step>
+    </mat-horizontal-stepper>
+  </form>
 </div>

@@ -1,5 +1,5 @@
 <div class="app-container">
-  <app-header (openDrawer)="toggle()" (openCodeDrawer)="toggleCode()" [nodeInformation]="nodeData" (viewChanged)="handleViewChange($event)"></app-header>
+  <app-header (openDrawer)="toggle()" (openCodeDrawer)="toggleCode()" [nodeInformation]="nodeData" (viewChanged)="handleViewChange($event)" (restartNodes)="handleRestart($event)"></app-header>
 
   <mat-drawer-container class="example-container" [hasBackdrop]="true">
     <mat-drawer #drawerCode [mode]="'over'" position="end" class="code-sidenav">
@@ -15,7 +15,12 @@
     </mat-drawer>
 
     <div>
-      <app-canvas-view [classicView]="classicView" [canvasData]="queryOutput" (nodeInfo)="nodeData = $event" [nodeData]="nodes" [edgeData]="edges"></app-canvas-view>
+      <app-canvas-view *ngIf="databaseSelected; else noDatabaseSelected" [restartView]="restartView" [classicView]="classicView" [canvasData]="queryOutput" (nodeInfo)="nodeData = $event" [nodeData]="nodes" [edgeData]="edges"></app-canvas-view>
+      <ng-template #noDatabaseSelected>
+        <div class="no-database-message">
+          Database not selected, please select a database.
+        </div>
+      </ng-template>
     </div>
   </mat-drawer-container>
 </div>

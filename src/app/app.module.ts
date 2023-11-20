@@ -17,7 +17,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import { DBConnectDialogComponent } from './Components/dbconnect-dialog/dbconnect-dialog.component';
 import {NgIf} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -25,7 +25,11 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import { NodeMapDialogComponent } from './Components/node-map-dialog/node-map-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NodeDetailDialogComponent } from './Components/node-detail-dialog/node-detail-dialog.component';
+import { MatStepperModule } from '@angular/material/stepper';
 import { NodeSingleDialogComponent } from './Components/node-single-dialog/node-single-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -63,7 +67,11 @@ import { NodeSingleDialogComponent } from './Components/node-single-dialog/node-
     MatInputModule,
     MatFormFieldModule,
     MatDialogModule,
-    MatSidenavModule
+    MatSidenavModule,
+    ReactiveFormsModule,
+    MatStepperModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]
