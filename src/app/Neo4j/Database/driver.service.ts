@@ -19,7 +19,6 @@ export class DriverService {
   }
   public updateCredentials(url: string, username: string, password: string): Observable<void> {
     return from(new Promise<void>((resolve, reject) => {
-        // Close the existing driver and wait for the closure to complete
         if (this.driver) {
             this.driver.close().then(() => {
                 this.initializeNewDriver(url, username, password, resolve, reject);
@@ -48,12 +47,12 @@ private initializeNewDriver(url: string, username: string, password: string, res
       .run('RETURN 1')
       .then(() => {
         session.close();
-        return true; // The database is connected
+        return true;
       })
       .catch(error => {
         console.error('Error checking database connectivity:', error);
         session.close();
-        return false; // There was an error connecting to the database
+        return false;
       });
   }
   private initializeDriver(username: string, password: string): Promise<void> {
@@ -70,7 +69,7 @@ private initializeNewDriver(url: string, username: string, password: string, res
     return this._credentials.asObservable();
   }
 
-  // Method to get Observable for neo4jUrl
+
   get neo4jUrl$(): Observable<string> {
     return this._neo4jUrl.asObservable();
   }
@@ -80,12 +79,10 @@ private initializeNewDriver(url: string, username: string, password: string, res
         // Adjust connection timeout if necessary
         connectionTimeout: 20000,
       });
-  
-      // Get server info to test the connection
+      
       tempDriver.getServerInfo()
         .then(info => {
           console.log('Connected to Neo4j server:', info);
-          //resolve(true);      // Resolve true if the server info is retrieved successfully
         })
         .catch(error => {
           if (error.code === 'Neo.ClientError.Security.Unauthorized') {
