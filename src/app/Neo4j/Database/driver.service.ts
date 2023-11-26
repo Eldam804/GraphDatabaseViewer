@@ -8,11 +8,11 @@ import { BehaviorSubject, Observable, from } from 'rxjs';
 export class DriverService {
   private driver!: Driver;
   private _neo4jUrl = new BehaviorSubject<string>('bolt://localhost:7687');
-  private _credentials = new BehaviorSubject<{username: string; password: string}>({ username: 'neo4j', password: 'Swag1234' });
+  private _credentials = new BehaviorSubject<{username: string; password: string}>({ username: 'neo4j', password: 'neo4j' });
   private username;
   private password;
   constructor() { 
-    this._credentials.next({username: "neo4j",password: "Swag1234"});
+    this._credentials.next({username: "neo4j",password: "neo4j"});
     this.username = this._credentials.value.username;
     this.password = this._credentials.value.password;
     this.initializeDriver(this.username, this.password);
