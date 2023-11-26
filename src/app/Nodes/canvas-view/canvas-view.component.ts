@@ -8,32 +8,66 @@ import { NodeDetailDialogComponent } from 'src/app/Components/node-detail-dialog
 import { MatDialog } from '@angular/material/dialog';
 import { NodeSingleDialogComponent } from 'src/app/Components/node-single-dialog/node-single-dialog.component';
 import { Edge, Node } from 'src/app/Models/nodes';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-canvas-view',
   templateUrl: './canvas-view.component.html',
   styleUrls: ['./canvas-view.component.css']
 })
-export class CanvasViewComponent implements OnChanges{
+export class CanvasViewComponent implements OnChanges, OnInit{
   @ViewChild('svg') svgRef!: ElementRef;
   @ViewChild('graphContainer') graphContainerRef!: ElementRef;  
   public nodes: Array<Node> = [];
   public edges: Array<Edge> = [];
+  public originalNodes: Array<Node> = [];
+  public originalEdges: Array<Edge> = [];
   private svg: any;
   private zoomBehavior: any;
+  private credentialsSubscription!: Subscription;
+  private urlSubscription!: Subscription;
   @Input() canvasData: any;
   @Input() nodeData: Array<Node> = [];
   @Input() edgeData: Array<Edge> = [];
   @Input() classicView: Boolean = true;
+  @Input() restartView: Boolean = false;
   @Output() nodeInfo: EventEmitter<any> = new EventEmitter<any>();
 
   constructor(private service: DriverService, public dialog: MatDialog){
-    this.getAllNodes();
-
+    //this.getAllNodes();
+    //this.originalNodes = this.nodes;
+    //this.originalEdges = this.edges;
+  }
+  ngOnInit() {
+    // Subscribe to the credentials observable
+    this.credentialsSubscription = this.service.credentials$.subscribe({
+      next: (credentials : any) => {
+        console.log('Credentials changed:', credentials);
+        // Call your method to fetch nodes here
+        setTimeout(() => {
+          // Reinitialize the driver with the new credentials
+          this.getAllNodes()
+      }, 2000); // 2000 milliseconds delay
+        this.originalNodes = this.nodes;
+        this.originalEdges = this.edges;
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // Check if canvasData input has changed
+    if (changes.restartView && changes.restartView.currentValue === true) {
+      console.debug("Restart view triggered");
+      this.restartView = false; // Reset the flag
+      //this.nodes = this.originalNodes;
+      //this.edges = this.originalEdges;
+      console.debug("CLASSIC VIEW: "+this.classicView);
+      if(this.classicView){
+        this.createGraph();
+      }else{
+        this.createClusterGraph();
+      }
+    }
     if(changes.classicView && !changes.classicView.firstChange){
       console.debug("change happend")
       console.debug(this.classicView);
@@ -162,6 +196,8 @@ export class CanvasViewComponent implements OnChanges{
   }
 
   getAllNodes(){
+    this.nodes = [];
+    this.edges = [];
     forkJoin([
       this.service.getAllNodes(),
       this.service.getAllEdges()
@@ -194,29 +230,33 @@ export class CanvasViewComponent implements OnChanges{
   });
   } 
   generateColors(n: number): string[] {
+    const palette2: string[] = [
+      '#53347e','#5a4090','#624c9f','#6b59ac',
+      '#7665b7','#8172c1','#8c7fc9','#998cd0',
+      '#a59ad6','#b2a8da','#bfb6de','#ccc4e0',
+      '#d9d2e2','#e6e1e2','#f2f0e2','#edf2e4',
+      '#dae5e6','#c8d9e8','#b7cce8','#a5bfe8',
+      '#93b3e7','#82a6e4','#719ae1','#608ddd',
+      '#5081d8','#3f74d2','#2f68cb','#1f5bc2',
+      '#0e4fb9','#0042af']
+    const palette: string[] = [
+        '#53347e', '#a5bfe8', '#624c9f', '#93b3e7', 
+        '#6b59ac', '#82a6e4', '#8172c1', '#719ae1', 
+        '#998cd0', '#608ddd', '#b2a8da', '#5081d8', 
+        '#ccc4e0', '#3f74d2', '#e6e1e2', '#2f68cb', 
+        '#f2f0e2', '#1f5bc2', '#edf2e4', '#0e4fb9', 
+        '#dae5e6', '#0042af', '#c8d9e8', '#7665b7', 
+        '#b7cce8', '#8c7fc9', '#bfb6de', '#5a4090', 
+        '#d9d2e2', '#a59ad6'
+    ];
+  
     const colors: string[] = [];
-    const usedHues: Set<number> = new Set();
-
-    // Generate a random number within a range, inclusive
-    const randomBetween = (min: number, max: number) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
-
     for (let i = 0; i < n; i++) {
-        let hue;
-        do {
-            hue = randomBetween(0, 359);
-        } while (usedHues.has(hue)); // Ensure the hue hasn't been used yet
-
-        usedHues.add(hue);
-        const saturation = randomBetween(60, 100);
-        const lightness = randomBetween(40, 60);
-
-        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+      colors.push(palette[i % palette.length]);
     }
-
+  
     return colors;
-}
+  }
   
   createGraph() {
     const svgWidth = window.innerWidth;
@@ -353,7 +393,7 @@ export class CanvasViewComponent implements OnChanges{
         .style('opacity', 1)
         .style('left', `${event.pageX}px`)
         .style('top', `${event.pageY}px`)
-        .html(`Node data: ${d.type}`); // replace with your actual node data
+        .html(`${d.type}`); // replace with your actual node data
     })
     .on('mouseleave', function(d) {
       tooltip.style('opacity', 0);
@@ -598,7 +638,19 @@ function linkArc(d: any) {
 
   links.attr('d', linkArc)
     .attr('id', (d, i) => 'linkPath' + i);
-    
+
+    const tooltip = d3.select(this.graphContainerRef.nativeElement).append("div")
+    .attr('class', 'tooltip');
+    links.on('mouseenter', function(event, d) {
+      tooltip
+        .style('opacity', 1)
+        .style('left', `${event.pageX}px`)
+        .style('top', `${event.pageY}px`)
+        .html(`${d.type}`); // replace with your actual node data
+    })
+    .on('mouseleave', function(d) {
+      tooltip.style('opacity', 0);
+    });
   linkGroup.selectAll('.link-text')
     .data(consolidatedEdges)
     .enter()

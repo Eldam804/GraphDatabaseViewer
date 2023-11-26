@@ -105,8 +105,8 @@ export class NodeSingleDialogComponent implements AfterViewInit {
   }
 
   createGraph() {
-    const svgWidth = window.innerWidth;
-    const svgHeight = window.innerHeight;
+    const svgWidth = window.innerWidth - 250;
+    const svgHeight = window.innerHeight - 400;
 
 
     const nodeTypes = [...new Set(this.nodes.map(node => node.name))];

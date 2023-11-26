@@ -1,0 +1,33 @@
+mat-horizontal-stepper {
+    width: 80%; /* Adjust the width of stepper */
+    margin: 0 auto; /* Center the stepper */
+  }
+  
+  .form-fields-container {
+    display: flex;
+    flex-direction: column; /* Stack form fields vertically */
+    margin-top: 28px;
+  }
+  
+  mat-form-field {
+    width: 100%; /* Full width form fields */
+    margin-bottom: 16px; /* Spacing between form fields */
+  }
+
+
+  .check-button {
+    color: #fff; /* White text */
+    background-color: #00796b; /* Teal background for example, choose what fits your design */
+    border: 1px solid #00695c; /* Slightly darker border for depth */
+    margin-top: 10px; /* Add some spacing */
+    min-width: 100px; /* Minimum width */
+  }
+  
+  .check-button[disabled] {
+    background-color: #b2dfdb; /* Lighter background when disabled */
+    color: #fff; /* Maintain white text when disabled */
+    border-color: #b2dfdb;
+  }
+  .spacer {
+    flex: 1 1 auto;
+  }

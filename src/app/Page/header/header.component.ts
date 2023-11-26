@@ -25,6 +25,7 @@ export class HeaderComponent {
 
   @Output() viewChanged = new EventEmitter<boolean>();
 
+  @Output() restartNodes = new EventEmitter();
 
   constructor(public dialog: MatDialog) {}
   openModal(){
@@ -38,6 +39,14 @@ export class HeaderComponent {
       console.log('The dialog was closed');
     });
   }
+  openConnectionModal(){
+    const dialogRef = this.dialog.open(DBConnectDialogComponent, {
+      disableClose: true,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
+  }
   openDrawer(){
     this.emitter.emit("openDrawer");
   }
@@ -45,6 +54,9 @@ export class HeaderComponent {
     this.codeEmitter.emit("openCodeDrawer");
   }
 
+  restart(){
+    this.restartNodes.emit(true);
+  }
   classicView(){
     this.viewChanged.emit(true);
   }
