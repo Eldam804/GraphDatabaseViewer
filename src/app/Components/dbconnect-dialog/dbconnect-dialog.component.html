@@ -1,4 +1,8 @@
 <div mat-dialog-content>
+  <span class="spacer"></span>
+  <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon" (click)="onNoClick()" matTooltip="Classic View">
+    <mat-icon>close</mat-icon>
+  </button>
   <form [formGroup]="credentialsForm">
     <mat-horizontal-stepper [linear]="true" #stepper (selectionChange)="onStepChange($event)">
       <mat-step [completed]="dbChecked">

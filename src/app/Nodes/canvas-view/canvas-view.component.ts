@@ -44,7 +44,10 @@ export class CanvasViewComponent implements OnChanges, OnInit{
       next: (credentials : any) => {
         console.log('Credentials changed:', credentials);
         // Call your method to fetch nodes here
-        this.getAllNodes();
+        setTimeout(() => {
+          // Reinitialize the driver with the new credentials
+          this.getAllNodes()
+      }, 2000); // 2000 milliseconds delay
         this.originalNodes = this.nodes;
         this.originalEdges = this.edges;
       }
@@ -56,8 +59,8 @@ export class CanvasViewComponent implements OnChanges, OnInit{
     if (changes.restartView && changes.restartView.currentValue === true) {
       console.debug("Restart view triggered");
       this.restartView = false; // Reset the flag
-      this.nodes = this.originalNodes;
-      this.edges = this.originalEdges;
+      //this.nodes = this.originalNodes;
+      //this.edges = this.originalEdges;
       console.debug("CLASSIC VIEW: "+this.classicView);
       if(this.classicView){
         this.createGraph();
@@ -227,7 +230,25 @@ export class CanvasViewComponent implements OnChanges, OnInit{
   });
   } 
   generateColors(n: number): string[] {
-    const palette: string[] = ['#808000', '#7b9800', '#73aa00', '#67b600', '#58bd00', '#48be00', '#36ba00', '#23b000', '#10a000', '#028c00', '#0f801a', '#1f7d35', '#287848', '#2d7058', '#306665', '#315a70', '#2f4a78', '#29387d', '#1e2280', '#000080']
+    const palette2: string[] = [
+      '#53347e','#5a4090','#624c9f','#6b59ac',
+      '#7665b7','#8172c1','#8c7fc9','#998cd0',
+      '#a59ad6','#b2a8da','#bfb6de','#ccc4e0',
+      '#d9d2e2','#e6e1e2','#f2f0e2','#edf2e4',
+      '#dae5e6','#c8d9e8','#b7cce8','#a5bfe8',
+      '#93b3e7','#82a6e4','#719ae1','#608ddd',
+      '#5081d8','#3f74d2','#2f68cb','#1f5bc2',
+      '#0e4fb9','#0042af']
+    const palette: string[] = [
+        '#53347e', '#a5bfe8', '#624c9f', '#93b3e7', 
+        '#6b59ac', '#82a6e4', '#8172c1', '#719ae1', 
+        '#998cd0', '#608ddd', '#b2a8da', '#5081d8', 
+        '#ccc4e0', '#3f74d2', '#e6e1e2', '#2f68cb', 
+        '#f2f0e2', '#1f5bc2', '#edf2e4', '#0e4fb9', 
+        '#dae5e6', '#0042af', '#c8d9e8', '#7665b7', 
+        '#b7cce8', '#8c7fc9', '#bfb6de', '#5a4090', 
+        '#d9d2e2', '#a59ad6'
+    ];
   
     const colors: string[] = [];
     for (let i = 0; i < n; i++) {
@@ -372,7 +393,7 @@ export class CanvasViewComponent implements OnChanges, OnInit{
         .style('opacity', 1)
         .style('left', `${event.pageX}px`)
         .style('top', `${event.pageY}px`)
-        .html(`Node data: ${d.type}`); // replace with your actual node data
+        .html(`${d.type}`); // replace with your actual node data
     })
     .on('mouseleave', function(d) {
       tooltip.style('opacity', 0);
@@ -617,7 +638,19 @@ function linkArc(d: any) {
 
   links.attr('d', linkArc)
     .attr('id', (d, i) => 'linkPath' + i);
-    
+
+    const tooltip = d3.select(this.graphContainerRef.nativeElement).append("div")
+    .attr('class', 'tooltip');
+    links.on('mouseenter', function(event, d) {
+      tooltip
+        .style('opacity', 1)
+        .style('left', `${event.pageX}px`)
+        .style('top', `${event.pageY}px`)
+        .html(`${d.type}`); // replace with your actual node data
+    })
+    .on('mouseleave', function(d) {
+      tooltip.style('opacity', 0);
+    });
   linkGroup.selectAll('.link-text')
     .data(consolidatedEdges)
     .enter()

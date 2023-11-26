@@ -9,22 +9,39 @@ export class DriverService {
   private driver!: Driver;
   private _neo4jUrl = new BehaviorSubject<string>('bolt://localhost:7687');
   private _credentials = new BehaviorSubject<{username: string; password: string}>({ username: 'neo4j', password: 'Swag1234' });
+  private username;
+  private password;
   constructor() { 
-    //this.neo4jUrl = 'bolt://localhost:7687';
-    //this.driver = neo4j.driver(this.neo4jUrl, neo4j.auth.basic('neo4j', 'Swag1234'), {disableLosslessIntegers: true});
-    this.initializeDriver();
+    this._credentials.next({username: "neo4j",password: "Swag1234"});
+    this.username = this._credentials.value.username;
+    this.password = this._credentials.value.password;
+    this.initializeDriver(this.username, this.password);
   }
-  public updateCredentials(url: string, username: string, password: string): void {
-    // Close the existing driver connection if one exists
-    if (this.driver) {
-      this.driver.close();
-    }
-    // Create a new driver instance with the new credentials
-    this._neo4jUrl.next(url);
-    this._credentials.next({ username, password });
-    // Reinitialize the driver with the new credentials
-    this.initializeDriver();
+  public updateCredentials(url: string, username: string, password: string): Observable<void> {
+    return from(new Promise<void>((resolve, reject) => {
+        // Close the existing driver and wait for the closure to complete
+        if (this.driver) {
+            this.driver.close().then(() => {
+                this.initializeNewDriver(url, username, password, resolve, reject);
+            }).catch(reject);
+        } else {
+            this.initializeNewDriver(url, username, password, resolve, reject);
+        }
+    }));
+}
+private initializeNewDriver(url: string, username: string, password: string, resolve: () => void, reject: (reason: any) => void) {
+  this._neo4jUrl.next(url);
+  this._credentials.next({ username, password });
+  this.username = username;
+  this.password = password;
+
+  try {
+      this.driver = neo4j.driver(this._neo4jUrl.value, neo4j.auth.basic(username, password), { disableLosslessIntegers: true });
+      resolve();
+  } catch (error) {
+      reject(error);
   }
+}
   public checkDatabaseConnectivity(): Promise<boolean> {
     const session = this.driver.session();
     return session
@@ -39,10 +56,16 @@ export class DriverService {
         return false; // There was an error connecting to the database
       });
   }
-  private initializeDriver() {
-    const credentials = this._credentials.value;
-    this.driver = neo4j.driver(this._neo4jUrl.value, neo4j.auth.basic(credentials.username, credentials.password), { disableLosslessIntegers: true });
-  }
+  private initializeDriver(username: string, password: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        try {
+            this.driver = neo4j.driver(this._neo4jUrl.value, neo4j.auth.basic(username, password), { disableLosslessIntegers: true });
+            resolve();
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
   get credentials$(): Observable<{ username: string; password: string }> {
     return this._credentials.asObservable();
   }

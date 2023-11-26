@@ -41,6 +41,7 @@ export class HeaderComponent {
   }
   openConnectionModal(){
     const dialogRef = this.dialog.open(DBConnectDialogComponent, {
+      disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');

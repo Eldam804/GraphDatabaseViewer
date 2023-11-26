@@ -75,13 +75,35 @@ export class DBConnectDialogComponent {
 
     onSubmit(){
       this.loading = true;
+      
       //@ts-ignore
-      this.driverService.updateCredentials(this.credentialsForm.get('url')?.value, this.credentialsForm.get('username')?.value, this.credentialsForm.get('password')?.value);
+      this.driverService.updateCredentials(this.credentialsForm.get('url')?.value, this.credentialsForm.get('username')?.value, this.credentialsForm.get('password')?.value).subscribe({
+        next: () => {
+            // Success handling
+            //this.showSnackbar("Successfully connected to the database!");
+        },
+        error:(error: any) => {
+            // Error handling
+            //console.error('Error updating credentials:', error);
+            //this.showSnackbar("Failed to connect to the database.");
+        },
+        complete: () => {
+            // This will run after either next or error
+            setTimeout(() => {
+              this.dialogRef.close();
+              this.loading = false;
+              this.driverService.checkDatabaseConnectivity().then(isConnected => {
+                  if(isConnected){
+                    this.showSnackbar("Successfully connected to the database!");
+                  }else{
+                    this.showSnackbar("Failed to connect to the database.");
+                  }
+                }
+              )
+          }, 3000);
+        }
+    });
       
-      
-      this.dialogRef.close();
-      this.loading = false;
-      this.showSnackbar("Successfully connected to the database!");
     }
 
     onNoClick(): void {

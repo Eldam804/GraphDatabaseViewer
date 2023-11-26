@@ -28,3 +28,6 @@ mat-horizontal-stepper {
     color: #fff; /* Maintain white text when disabled */
     border-color: #b2dfdb;
   }
+  .spacer {
+    flex: 1 1 auto;
+  }

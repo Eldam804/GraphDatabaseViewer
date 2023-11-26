@@ -1,5 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDrawer } from '@angular/material/sidenav';
+import { Subscription } from 'rxjs';
 import { DriverService } from 'src/app/Neo4j/Database/driver.service';
 
 @Component({
@@ -7,7 +8,7 @@ import { DriverService } from 'src/app/Neo4j/Database/driver.service';
   templateUrl: './body.component.html',
   styleUrls: ['./body.component.css'],
 })
-export class BodyComponent {
+export class BodyComponent implements OnInit {
   @ViewChild('drawer', { static: true }) public drawer!: MatDrawer;
   @ViewChild('drawerCode', { static: true }) public codeDrawer!: MatDrawer;
   public queryOutput: any;
@@ -16,6 +17,7 @@ export class BodyComponent {
   public nodeData: any;
   public databaseSelected: boolean = true;
   public restartView: boolean = false;
+  private credentialsSubscription!: Subscription;
   classicView: boolean = true; // default value
 
   constructor(private service: DriverService){
@@ -28,6 +30,17 @@ export class BodyComponent {
     });
   }
 
+  ngOnInit() {
+    // Subscribe to the credentials observable
+    this.credentialsSubscription = this.service.credentials$.subscribe({
+      next: (credentials : any) => {
+        //Timeout here is need because the connection is checked too soon.
+        setTimeout(() => {
+          this.checkConnectivity();
+        }, 3500);
+      }
+    });
+  }
 
   handleViewChange(view: boolean) {
     this.classicView = view;
